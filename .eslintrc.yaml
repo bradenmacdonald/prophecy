@@ -1,0 +1,20 @@
+---
+parserOptions:
+    ecmaVersion: 6
+    sourceType: module
+env:
+    browser: false
+    node: true
+    es6: true
+    mocha: true
+extends:
+    - eslint:recommended
+rules:
+    strict: 0
+    indent: 2
+    valid-jsdoc:
+        - error
+        -
+            requireReturn: false
+            requireReturnDescription: false
+    require-jsdoc: error
