@@ -1,4 +1,4 @@
-import { default as Imm } from 'immutable';
+import * as Imm from 'immutable';
 export const Immutable = Imm;
 /**
  * Throw an error if the given condition is ever false.
@@ -25,28 +25,25 @@ export function assertIsNumber(v) {
  * @param {*} v - Value that is expected to be a positive integer or null
  */
 export function assertPositiveIntegerOrNull(v) {
-    assert(v === null || (typeof v === "number" && parseInt(v) === v && v > 0), "Expected a positive integer, or null.");
+    assert(v === null || (typeof v === "number" && parseInt(v.toString()) === v && v > 0), "Expected a positive integer, or null.");
 }
-const _validationMessages = Symbol();
-const _validationResult = Symbol();
-const _Error = Symbol('error');
-const _Warning = Symbol('warning');
 /**
  * ValidationResult: Used with PRecord to provide detailed, flexible,
  * contextual validation of model data.
  */
 class ValidationResult {
     constructor() {
-        this[_validationMessages] = [];
+        /**@internal */
+        this.__validationMessages = [];
     }
     get warnings() {
-        return this[_validationMessages].filter(msg => msg.type === _Warning);
+        return this.__validationMessages.filter(msg => msg.type === "warning" /* Warning */);
     }
     get errors() {
-        return this[_validationMessages].filter(msg => msg.type === _Error);
+        return this.__validationMessages.filter(msg => msg.type === "error" /* Error */);
     }
     getFieldIssues(fieldName) {
-        return this[_validationMessages].filter(msg => msg.field === fieldName);
+        return this.__validationMessages.filter(msg => msg.field === fieldName);
     }
     /**
      * Get an array of all validation issues that are not specific to any one field.
@@ -55,11 +52,11 @@ class ValidationResult {
         return this.getFieldIssues(null);
     }
     get allIssues() {
-        return Object.freeze(this[_validationMessages]);
+        return Object.freeze(this.__validationMessages);
     }
 }
-ValidationResult.Warning = _Warning;
-ValidationResult.Error = _Error;
+ValidationResult.Warning = "warning" /* Warning */;
+ValidationResult.Error = "error" /* Error */;
 /**
  * Context during which PRecord validation happens.
  * This contains a reference to the budget that the PRecord in question
@@ -67,13 +64,11 @@ ValidationResult.Error = _Error;
  */
 class ValidationContext {
     constructor(budget) {
-        this[_validationResult] = new ValidationResult();
+        this.validationResult = new ValidationResult();
         this.budget = budget;
     }
-    _pushMessage(field, message, type) {
-        assert(type === _Warning || type === _Error);
-        assert(field === null || typeof field === 'string');
-        this[_validationResult][_validationMessages].push(Object.freeze({ field, type, message }));
+    _pushMessage(type, message, field) {
+        this.validationResult.__validationMessages.push(Object.freeze({ field, type, message }));
     }
     /**
      * Add a warning to the validation result.
@@ -83,7 +78,7 @@ class ValidationContext {
      * @param {*} message - A string describing the validation issue.
      */
     addWarning(field, message) {
-        this._pushMessage(field, message, _Warning);
+        this._pushMessage("warning" /* Warning */, message, field);
     }
     /**
      * Add an error to the validation result.
@@ -93,9 +88,9 @@ class ValidationContext {
      * @param {*} message - A string describing the validation issue.
      */
     addError(field, message) {
-        this._pushMessage(field, message, _Error);
+        this._pushMessage("error" /* Error */, message, field);
     }
-    get result() { return Object.freeze(this[_validationResult]); }
+    get result() { return Object.freeze(this.validationResult); }
 }
 /**
  * PRecord: Immutable.Record with a bit of extra functionality
@@ -108,7 +103,7 @@ class ValidationContext {
  * @param {Object} defaultValues - Definition of the fields that this PRecord will have
  * @returns {*} - A class that can be extended to create a new PRecord subclass
  */
-export const PRecord = defaultValues => class extends Immutable.Record(defaultValues) {
+export const PRecord = (defaultValues) => class extends Immutable.Record(defaultValues) {
     constructor(values) {
         super(values);
         this._skipChecks = false;
@@ -122,7 +117,7 @@ export const PRecord = defaultValues => class extends Immutable.Record(defaultVa
      * @returns {Object} - New instance of this Record subclass with the given changes.
      */
     set(k, v) {
-        const result = super.set(k, v);
+        const result = super.set(k, v); // Todo: Change this 'any' when better record definitions are available
         if (!this._skipChecks) {
             result._checkInvariants();
         }
@@ -139,7 +134,7 @@ export const PRecord = defaultValues => class extends Immutable.Record(defaultVa
      * @returns {Object} - New instance of this Record subclass with the given changes.
      */
     withMutations(fn) {
-        return super.withMutations(newRecord => {
+        return super.withMutations((newRecord) => {
             newRecord._skipChecks = true;
             fn(newRecord);
             newRecord._skipChecks = false;

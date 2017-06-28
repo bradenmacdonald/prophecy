@@ -11,7 +11,9 @@ export default {
     format: 'umd',
     plugins: [
         resolve(),
-        commonjs({}),
+        commonjs({
+            namedExports: { 'immutable': ['Record', 'List', 'Map', 'OrderedMap', 'Seq', 'fromJS', 'is'] }
+        }),
         uglify({}, minify)
     ]
 };
