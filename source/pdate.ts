@@ -58,7 +58,7 @@ const DAYS_PER_MONTH = Object.freeze([
  * @param {number} day - Day (1-31)
  * @returns {number}
  */
-function triplet_to_days_value(year, month, day) {
+function triplet_to_days_value(year: number, month: number, day: number) {
     assert(year >= 2000 && year <= 3000, "Year is invalid - must be between 2000 and 3000.");
     assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
     assert(day > 0 && day <= PDate.daysInMonth(year, month));
@@ -70,10 +70,9 @@ function triplet_to_days_value(year, month, day) {
     return days_value;
 }
 
-// Symbol used for almost-private access to the value inside PDate objects.
-const days_value_key = Symbol("value");
-
 export default class PDate {
+    /** The internal date value (days since 2000-01-01) */
+    readonly value: number;
     /**
      * Construct a Date from a triple of year, month (0-11), day (1-31)
      * @param {number} year - Year (e.g. 2012)
@@ -81,7 +80,7 @@ export default class PDate {
      * @param {number} day - Day (1-31)
      * @returns {PDate}
      */
-    static create(year, month, day) {
+    static create(year: number, month: number, day: number) {
         return new PDate(triplet_to_days_value(year, month, day));
     }
     /**
@@ -89,7 +88,7 @@ export default class PDate {
      * @param {string} str - An ISO 8601 date string
      * @returns {PDate}
      */
-    static fromString(str) {
+    static fromString(str: string) {
         const year = parseInt(str.substr(0, 4));
         let month = NaN;
         let day = NaN;
@@ -112,7 +111,7 @@ export default class PDate {
      * @param {...*} keys - substitution values
      * @returns {PDate}
      */
-    static parseTemplateLiteral(strings, ...keys) {
+    static parseTemplateLiteral(strings: TemplateStringsArray, ...keys: any[]) {
         return PDate.fromString(String.raw(strings, ...keys));
     }
     /**
@@ -121,21 +120,19 @@ export default class PDate {
      */
     static today() {
         const js_date = new Date();
-        return new PDate(triplet_to_days_value(js_date.getYear() + 1900, js_date.getMonth(), js_date.getDate()));
+        return new PDate(triplet_to_days_value(js_date.getFullYear(), js_date.getMonth(), js_date.getDate()));
     }
 
     /**
      * Construct a PDate instance using its internal int representation (# of days since the millenium)
      * @param {Number} daysSinceMillenium - number representing the date
      */
-    constructor(daysSinceMillenium) {
-        assertIsNumber(daysSinceMillenium);
+    constructor(daysSinceMillenium: number) {
         assert(daysSinceMillenium >= 0);
         assert(daysSinceMillenium <= 365615); // Corresponds to Dec. 31, 3000
-        // Store the daysSinceMillenium value into the private field that backs the .value property:
-        this[days_value_key] = daysSinceMillenium;
-        // Simpler, but far slower:
-        // Object.defineProperty(this, "_days_value", {value: daysSinceMillenium, writable: false});
+        this.value = daysSinceMillenium;
+        // Safer, but notably slower:
+        //Object.defineProperty(this, "value", {value: daysSinceMillenium, writable: false});
     }
 
     /**
@@ -156,7 +153,7 @@ export default class PDate {
      */
     get year() {
         // This formula is valid for any year 2000 or later
-        const centuries = this[days_value_key] / 36525 | 0;
+        const centuries = this.value / 36525 | 0;
         return (2000 + (this.value + centuries - (centuries/4|0)) / 365.25) |0;
     }
     /**
@@ -177,16 +174,14 @@ export default class PDate {
      * Get the day of the month (1-31)
      * @returns {number}
      */
-    get day() {
+    get day(): number {
         return this.value - triplet_to_days_value(this.year, this.month, 1) + 1;
     }
 
     /** Get the day of the week (0 = Sunday, 6 = Saturday) */
-    get dayOfWeek() { return (this.value + 6) % 7; }
+    get dayOfWeek(): number { return (this.value + 6) % 7; }
     /** Get the day of the year (0-365) */
-    get dayOfYear() { return this.value - triplet_to_days_value(this.year, 0, 1); }
-    /** Get the internal date value (days since 2000-01-01) */
-    get value() { return this[days_value_key]; }
+    get dayOfYear(): number { return this.value - triplet_to_days_value(this.year, 0, 1); }
 
     /**
      * Get the date as an ISO 8601 string ("2015-01-25")
@@ -212,7 +207,7 @@ export default class PDate {
      * @param {number} month - Month (0-11)
      * @returns {number}
      */
-    static daysInMonth(year, month) {
+    static daysInMonth(year: number, month: number) {
         assert(year >= 2000 && year <= 3000);
         assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
         if (month === MONTHS.FEB) {
@@ -225,7 +220,7 @@ export default class PDate {
      * @param {number} year - The year in question
      * @returns {boolean}
      */
-    static isLeapYear(year) { year=year|0; return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0); }
+    static isLeapYear(year: number) { year=year|0; return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0); }
 
     // Constants
     static get DAYS() { return DAYS; }

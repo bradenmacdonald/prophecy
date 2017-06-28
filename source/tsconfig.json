@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es6",
+        "allowJs": true,
+        "noImplicitAny": true,
+        "sourceMap": true,
+        "module": "es6",
+        "moduleResolution": "node",
+        "outDir": "../dist/",
+        "rootDir": "."
+    },
+    "exclude": [
+        "**/*_test.js"
+    ]
+}
