@@ -31,7 +31,7 @@ export function assertPositiveIntegerOrNull(v) {
  * ValidationResult: Used with PRecord to provide detailed, flexible,
  * contextual validation of model data.
  */
-class ValidationResult {
+export class ValidationResult {
     constructor() {
         /**@internal */
         this.__validationMessages = [];
@@ -62,7 +62,7 @@ ValidationResult.Error = "error" /* Error */;
  * This contains a reference to the budget that the PRecord in question
  * will become part of.
  */
-class ValidationContext {
+export class ValidationContext {
     constructor(budget) {
         this.validationResult = new ValidationResult();
         this.budget = budget;

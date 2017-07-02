@@ -28,7 +28,7 @@ export function assertIsNumber(v: number) {
  *
  * @param {*} v - Value that is expected to be a positive integer or null
  */
-export function assertPositiveIntegerOrNull(v: number) {
+export function assertPositiveIntegerOrNull(v: number|null) {
     assert(
         v === null || (typeof v === "number" && parseInt(v.toString()) === v && v > 0),
         "Expected a positive integer, or null."
@@ -43,13 +43,13 @@ const enum ValidationType {
 interface ValidationMessage {
     type: ValidationType,
     message: string,
-    field: string,
+    field: string|null,
 }
 /**
  * ValidationResult: Used with PRecord to provide detailed, flexible,
  * contextual validation of model data.
  */
-class ValidationResult {
+export class ValidationResult {
     /**@internal */
     __validationMessages: ValidationMessage[] = [];
     static Warning = ValidationType.Warning;
@@ -63,7 +63,7 @@ class ValidationResult {
         return this.__validationMessages.filter(msg => msg.type === ValidationType.Error);
     }
 
-    getFieldIssues(fieldName: string) {
+    getFieldIssues(fieldName: string|null) {
         return this.__validationMessages.filter(msg => msg.field === fieldName);
     }
 
@@ -84,9 +84,9 @@ class ValidationResult {
  * This contains a reference to the budget that the PRecord in question
  * will become part of.
  */
-class ValidationContext {
-    private validationResult = new ValidationResult();
+export class ValidationContext {
     budget: Budget;
+    private validationResult = new ValidationResult();
     constructor(budget: Budget) {
         this.budget = budget;
     }
@@ -97,7 +97,7 @@ class ValidationContext {
 
     /**
      * Add a warning to the validation result.
-     * 
+     *
      * @param {string|null} field - The field that this warning is about,
      * or null for warnings that involve multiple fields.
      * @param {*} message - A string describing the validation issue.
@@ -108,7 +108,7 @@ class ValidationContext {
 
     /**
      * Add an error to the validation result.
-     * 
+     *
      * @param {string|null} field - The field that this error is about,
      * or null for warnings that involve multiple fields.
      * @param {*} message - A string describing the validation issue.

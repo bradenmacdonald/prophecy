@@ -213,7 +213,7 @@ export default class PDate {
         if (month === MONTHS.FEB) {
             return PDate.isLeapYear(year) ? 29 : 28;
         }
-        return DAYS_PER_MONTH[month];
+        return DAYS_PER_MONTH[month] as number;
     }
     /**
      * Is 'year' a leap year? Can be an absolute year (e.g. 2016) or relative to the millenium (e.g. 16).
