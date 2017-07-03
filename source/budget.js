@@ -1,9 +1,10 @@
+import * as Immutable from 'immutable';
 import PDate from './pdate';
 import {Account} from './account';
 import {Category, CategoryGroup} from './category';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {Transaction} from './transaction';
-import {__, assert, assertIsNumber, PRecord, Immutable} from './util';
+import {__, assert, assertIsNumber, PRecord} from './util';
 
 
 // Private constants used to create private fields on a Record subclass:

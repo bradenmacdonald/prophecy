@@ -3,7 +3,9 @@
  *
  * All of these classes should be namespaced within a 'Prophecy' global.
  */
-export { PRecord, Immutable } from './util';
+import * as Imm from 'immutable';
+export const Immutable = Imm;
+export { PRecord } from './precord';
 export { Account } from './account';
 export { Budget } from './budget';
 export { Category, CategoryGroup, CategoryRule, CategoryRulePeriod } from './category';

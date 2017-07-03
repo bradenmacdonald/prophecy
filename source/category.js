@@ -1,6 +1,7 @@
+import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {default as PDate} from './pdate';
-import {assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord, Immutable} from './util';
+import {assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord} from './util';
 
 
 export const CategoryRulePeriod = Object.freeze({

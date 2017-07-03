@@ -1,20 +1,28 @@
+import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
-import {assert, assertIsNumber, Immutable, PRecord} from './util';
+import {assert, assertIsNumber, PRecord} from './util';
 
+interface AccountArguments {
+    id?: number|null|undefined;
+    name?: string;
+    initialBalance?: number;
+    currencyCode?: string;
+    metadata?: Immutable.Map<string, any>;
+}
 
 /**
  * Account: Represents a bank account, credit card, or a concept like "Cash"
  */
 export class Account extends PRecord({
-    id: null,
+    id: null as number|null,
     name: "",
     initialBalance: 0,
     /** the ISO 4217 currency code */
     currencyCode: "USD",
     /* Arbitrary data defined by the user */
-    metadata: Immutable.Map(),
+    metadata: Immutable.Map<string, any>(),
 }) {
-    constructor(values) {
+    constructor(values: AccountArguments) {
         super(Account.cleanArgs(values));
     }
 
@@ -39,7 +47,7 @@ export class Account extends PRecord({
      * @param {Object} values - Values for the fields of this account
      * @returns {Object} - Cleaned values for the fields of this account
      */
-    static cleanArgs(values) {
+    static cleanArgs(values: AccountArguments) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
             values.metadata = Immutable.fromJS(values.metadata);

@@ -1,5 +1,3 @@
-import * as Imm from 'immutable';
-export const Immutable = Imm;
 /**
  * Throw an error if the given condition is ever false.
  *

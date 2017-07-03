@@ -1,5 +1,6 @@
+import * as Immutable from 'immutable';
 import { Currency, SUPPORTED_CURRENCIES } from './currency';
-import { assert, assertIsNumber, Immutable, PRecord } from './util';
+import { assert, assertIsNumber, PRecord } from './util';
 /**
  * Account: Represents a bank account, credit card, or a concept like "Cash"
  */

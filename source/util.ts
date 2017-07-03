@@ -1,5 +1,4 @@
-import * as Imm from 'immutable';
-export const Immutable = Imm;
+import * as Immutable from 'immutable';
 import {Budget} from './budget'; // for type definition only
 
 /**

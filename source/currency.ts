@@ -51,7 +51,7 @@ export class Currency {
 
 
 /** Global constant map listing supported currencies. */
-export const SUPPORTED_CURRENCIES = Object.freeze({
+export const SUPPORTED_CURRENCIES: Readonly<{[currencyCode: string]: Currency}> = Object.freeze({
     CAD: new Currency("CAD", __("Canadian dollar"), ["$", "C$"]),
     EUR: new Currency("EUR", __("Euro"), ["€"]),
     USD: new Currency("USD", __("United States dollar"), ["$", "US$"]),

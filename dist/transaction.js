@@ -1,5 +1,6 @@
+import * as Immutable from 'immutable';
 import { default as PDate } from './pdate';
-import { assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord, Immutable, __ } from './util';
+import { assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord, __ } from './util';
 export const TransactionDetail = Immutable.Record({
     amount: 0.0,
     description: "",
