@@ -25,7 +25,7 @@ describe('CategoryRule', function() {
 
         // Simple tests that can apply to all repetition periods:
 
-        for (let periodName of Object.keys(CategoryRulePeriod)) {
+        for (let periodName of ['Day', 'Week', 'Month', 'Year']) {
             const period = CategoryRulePeriod[periodName];
             it('returns 1 occurence for a "1 ' + periodName + '" repetition between Jan 1, 2016 and Jan 1, 2016 when startDate and endDate are null.', () => {
                 const rule = new CategoryRule({startDate: null, endDate: null, repeatN: 1, period});

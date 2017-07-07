@@ -2,6 +2,13 @@ import * as Immutable from 'immutable';
 import {Budget} from './budget'; // for type definition only
 
 /**
+ * A useful type for accepting any iterable into a PRecord constructor
+ */
+export interface MappableIterable {
+    map<T>(mapper: ((v: any) => T)): T[]|Immutable.Iterable<number, T>;
+}
+
+/**
  * Throw an error if the given condition is ever false.
  *
  * @param {boolean} cond - Condition that is expected to be true
@@ -83,8 +90,9 @@ export class ValidationResult {
  * will become part of.
  */
 export class ValidationContext {
-    budget: Budget;
+    readonly budget: Budget;
     private validationResult = new ValidationResult();
+
     constructor(budget: Budget) {
         this.budget = budget;
     }
