@@ -615,11 +615,14 @@ describe('Budget', function() {
             // But Budget 2 should have only three transactions:
             budget2.transactions.size.should.equal(3);
             // And the order should be preserved:
-            budget2.transactions.valueSeq().toArray().should.deep.equal([  // Note: .deep.equal considers all PDates equal
-                new Transaction({id: 100, who: "JanCo", date: PDate.create(2016, 0, 1)}),
-                new Transaction({id: 5, who: "MayCo", date: PDate.create(2016, 4, 2)}),
-                new Transaction({id: 11, who: "NovCo", date: PDate.create(2016, 10, 1)}),
-            ]);
+            Immutable.is(
+                budget2.transactions.valueSeq(),
+                Immutable.Seq([  // Note: .deep.equal etc. considers all PDates equal
+                    new Transaction({id: 100, who: "JanCo", date: PDate.create(2016, 0, 1)}),
+                    new Transaction({id: 5, who: "MayCo", date: PDate.create(2016, 4, 2)}),
+                    new Transaction({id: 11, who: "NovCo", date: PDate.create(2016, 10, 1)}),
+                ])
+            ).should.be.true;
         });
 
         it('can be modified', () => {

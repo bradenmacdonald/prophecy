@@ -1,12 +1,12 @@
 import * as Immutable from 'immutable';
 import { default as PDate } from './pdate';
-import { assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord, __ } from './util';
-export const TransactionDetail = Immutable.Record({
+import { __, assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord } from './util';
+export class TransactionDetail extends PRecord({
     amount: 0.0,
     description: "",
     categoryId: null,
-});
-const M_AMOUNT = Symbol("amount");
+}) {
+}
 /**
  * Transaction: Represents a change in the balance of an account.
  * Has an amount, who (who the money went to / came from), description,
@@ -29,7 +29,7 @@ export class Transaction extends PRecord({
      * pending transactions affect the budget if their date is today or past.
      * If their day is in the future, they don't.
      * pending transactions never affect the account balances.
-     **/
+     */
     pending: true,
     /**
      * isTransfer:
@@ -66,23 +66,26 @@ export class Transaction extends PRecord({
         assert(this.detail instanceof Immutable.List);
         assert(this.detail.size > 0);
         this.detail.forEach(entry => {
-            assert(entry instanceof TransactionDetail);
+            if (!(entry instanceof TransactionDetail)) {
+                throw new Error('transaction .detail must be TransactionDetail instances');
+            }
             assertIsNumber(entry.amount);
             assert(typeof entry.description === 'string');
             assertPositiveIntegerOrNull(entry.categoryId);
+            if (this.isTransfer) {
+                assert(entry.categoryId === null, "Do not set a category for transfer transactions.");
+            }
         });
         assert(this.metadata instanceof Immutable.Map);
-        if (this.isTransfer) {
-            this.detail.forEach(entry => assert(entry.categoryId === null, "Do not set a category for transfer transactions."));
-        }
     }
     _validate(context) {
         let account = null;
         if (this.accountId !== null) {
             // An accountID is set - is it valid?
-            account = context.budget.accounts.get(this.accountId);
+            const accounts = context.budget.accounts; // TODO remove type, 'as'
+            account = accounts.get(this.accountId);
             if (!account) {
-                context.addError("Invalid account.");
+                context.addError('accountId', "Invalid account.");
             }
         }
         else {
@@ -91,22 +94,26 @@ export class Transaction extends PRecord({
                 // Yes, that's fine. If the amount is $0 or the transaction is pending, the account does not matter.
             }
             else {
-                context.addWarning(__("Set the account of this transaction."));
+                context.addWarning('accountId', __("Set the account of this transaction."));
             }
         }
         this.detail.forEach(detail => {
+            if (detail === undefined) {
+                throw new Error('Unexpectedly undefined detail entry.');
+            }
             if (detail.categoryId !== null) {
-                const category = context.budget.categories.get(detail.categoryId, null);
+                const categories = context.budget.categories; // TODO: remove 'as', type
+                const category = categories.get(detail.categoryId) || null;
                 if (category) {
                     if (account) {
                         // Check that the account's currency matches the category's currency
                         if (account.currencyCode !== category.currencyCode) {
-                            context.addError("A Transaction's category's currency must match its account currency.");
+                            context.addError('detail', "A Transaction's category's currency must match its account currency.");
                         }
                     }
                 }
                 else {
-                    context.addError("Invalid category.");
+                    context.addError('detail', "Invalid category.");
                 }
             }
             else {
@@ -115,7 +122,7 @@ export class Transaction extends PRecord({
                     // Yes, that's fine.
                 }
                 else {
-                    context.addWarning(__("This transaction is missing a category."));
+                    context.addWarning('detail', __("This transaction is missing a category."));
                 }
             }
         });
@@ -124,10 +131,10 @@ export class Transaction extends PRecord({
     get isSplit() { return this.detail.size > 1; }
     /** Get the sum of the amounts of the 'detail' entries */
     get amount() {
-        if (this[M_AMOUNT] === undefined) {
-            this[M_AMOUNT] = this.detail.reduce((acc, detailEntry) => acc + detailEntry.amount, 0);
+        if (this._cachedAmount === undefined) {
+            this._cachedAmount = this.detail.reduce((acc, detailEntry) => acc + detailEntry.amount, 0);
         }
-        return this[M_AMOUNT];
+        return this._cachedAmount;
     }
     /**
      * Given a JS object which may be JSON-serializable, convert it to the proper
@@ -142,13 +149,16 @@ export class Transaction extends PRecord({
      */
     static cleanArgs(values) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
-        if ('date' in values && values.date !== null && !(values.date instanceof PDate)) {
+        if (typeof values.date === 'number') {
             values.date = new PDate(values.date);
         }
-        if ('detail' in values) {
+        else {
+            assert(values.date === null || values.date === undefined || values.date instanceof PDate, 'invalid date value');
+        }
+        if (values.detail !== undefined) {
             // 'detail' can be any iterable with TransactionDetail-typed values or
             // objects used to initialize TransactionDetail
-            values.detail = new Immutable.List(values.detail.map(d => d instanceof TransactionDetail ? d : new TransactionDetail(d)));
+            values.detail = Immutable.List(values.detail.map(d => d instanceof TransactionDetail ? d : new TransactionDetail(d)));
         }
         if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
             values.metadata = Immutable.fromJS(values.metadata);
