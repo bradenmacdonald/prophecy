@@ -153,7 +153,7 @@ export class Category extends PRecord({
     }
     _validate(context) {
         // Group must be valid
-        const groups = context.budget.categoryGroups; // TODO: remove
+        const groups = context.budget.categoryGroups;
         if (this.groupId === null || !groups.has(this.groupId)) {
             context.addError(null, "Every Category must be assigned to a valid CategoryGroup.");
         }
@@ -163,11 +163,8 @@ export class Category extends PRecord({
             rules.forEach((rule, i) => {
                 rules.forEach((otherRule, j) => {
                     if (i !== j) {
-                        if (rule === undefined || otherRule === undefined) {
-                            throw new Error('rule undefined - unexpected'); // TODO: Can we remove this if/throw?
-                        }
-                        const otherStartDate = otherRule.startDate || context.budget.startDate; // TODO: remove
-                        const otherEndDate = otherRule.endDate || context.budget.endDate; // TODO: remove
+                        const otherStartDate = otherRule.startDate || context.budget.startDate;
+                        const otherEndDate = otherRule.endDate || context.budget.endDate;
                         if (rule.countOccurrencesBetween(otherStartDate, otherEndDate) !== 0) {
                             context.addError('rules', "A budget category's rules must not overlap.");
                         }

@@ -188,21 +188,18 @@ export class Category extends PRecord({
 
     _validate(context: ValidationContext) {
         // Group must be valid
-        const groups = context.budget.categoryGroups as Immutable.OrderedMap<number, CategoryGroup>; // TODO: remove
+        const groups = context.budget.categoryGroups;
         if (this.groupId === null || !groups.has(this.groupId)) {
             context.addError(null, "Every Category must be assigned to a valid CategoryGroup.");
         }
         // Ensure that no rules overlap:
         if (this.rules !== null) {
             const rules = this.rules;
-            rules.forEach((rule, i) => {
-                rules.forEach((otherRule, j) => {
+            rules.forEach((rule: CategoryRule, i: number) => {
+                rules.forEach((otherRule: CategoryRule, j: number) => {
                     if (i !== j) {
-                        if (rule === undefined || otherRule === undefined) {
-                            throw new Error('rule undefined - unexpected'); // TODO: Can we remove this if/throw?
-                        }
-                        const otherStartDate = otherRule.startDate || context.budget.startDate as any as PDate; // TODO: remove
-                        const otherEndDate = otherRule.endDate || context.budget.endDate as any as PDate; // TODO: remove
+                        const otherStartDate = otherRule.startDate || context.budget.startDate;
+                        const otherEndDate = otherRule.endDate || context.budget.endDate;
                         if (rule.countOccurrencesBetween(otherStartDate, otherEndDate) !== 0) {
                             context.addError('rules', "A budget category's rules must not overlap.");
                         }

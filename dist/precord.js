@@ -27,7 +27,7 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
      * @returns {Object} - New instance of this Record subclass with the given changes.
      */
     set(k, v) {
-        const result = super.set(k, v); // Todo: Change this 'any' when better record definitions are available
+        const result = super.set(k, v);
         if (!this._skipChecks) {
             result._checkInvariants();
         }

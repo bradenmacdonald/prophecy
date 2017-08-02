@@ -104,8 +104,7 @@ export class Transaction extends PRecord({
         let account: Account|null = null;
         if (this.accountId !== null) {
             // An accountID is set - is it valid?
-            const accounts: Immutable.OrderedMap<number, Account> = context.budget.accounts as Immutable.OrderedMap<number, Account>; // TODO remove type, 'as'
-            account = accounts.get(this.accountId);
+            account = context.budget.accounts.get(this.accountId);
             if (!account) {
                 context.addError('accountId', "Invalid account.");
             }
@@ -122,8 +121,7 @@ export class Transaction extends PRecord({
                 throw new Error('Unexpectedly undefined detail entry.');
             }
             if (detail.categoryId !== null) {
-                const categories: Immutable.OrderedMap<number, Category> = context.budget.categories as Immutable.OrderedMap<number, Category>; // TODO: remove 'as', type
-                const category: Category|null = categories.get(detail.categoryId) || null;
+                const category: Category|null = context.budget.categories.get(detail.categoryId) || null;
                 if (category) {
                     if (account) {
                         // Check that the account's currency matches the category's currency
@@ -151,7 +149,7 @@ export class Transaction extends PRecord({
     /** Get the sum of the amounts of the 'detail' entries */
     get amount() {
         if (this._cachedAmount === undefined) {
-            this._cachedAmount = this.detail.reduce((acc, detailEntry) => (acc as number) + (detailEntry as TransactionDetail).amount, 0);
+            this._cachedAmount = this.detail.reduce((acc: number, detailEntry: TransactionDetail) => acc + detailEntry.amount, 0);
         }
         return this._cachedAmount;
     }
