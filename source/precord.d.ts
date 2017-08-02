@@ -9,6 +9,9 @@ import {ValidationResult} from './util';
 export interface TypedRecordClass<T extends Object> {
     (values?: Partial<T> | Iterable<[string, any]>): TypedRecordInstance<T> & Readonly<T>;
     new (values?: Partial<T> | Iterable<[string, any]>): TypedRecordInstance<T> & Readonly<T>;
+
+    // And PRecord-specific extensions:
+    fromJS(obj: any): T;
 }
 
 interface TypedRecordInstance<T extends Object> {

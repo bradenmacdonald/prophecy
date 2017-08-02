@@ -745,7 +745,6 @@ describe('Budget', function() {
             budget.accountBalances[2].should.equal(123456); // $1,234.56 Chequing
             budget.accountBalances[3].should.equal(456789); // $4,567.89 Savings
             budget.accountBalances[4].should.equal(-50000); // -500.00 Credit Card
-            budget.accountBalances[null].should.equal(0); // Transactions with no accountId set
         });
 
         it('sums the balance of each account for all non-pending transactions', () => {
@@ -762,7 +761,6 @@ describe('Budget', function() {
             budget.accountBalances[2].should.equal(123456); // Chequing
             budget.accountBalances[3].should.equal(456789 + 10000); // Savings
             budget.accountBalances[4].should.equal(-50000); // Credit card
-            budget.accountBalances[null].should.equal(0); // Transactions with no accountId set
 
             const budget2 = budget.updateTransaction(
                 // Make the credit card transaction non-pending:
@@ -789,7 +787,6 @@ describe('Budget', function() {
             });
             budget.accountBalances[1].should.equal(8000 - 100 + 4500); // Cash
             budget.accountBalances[4].should.equal(-50000); // Credit card
-            budget.accountBalances[null].should.equal(-1212); // Transactions with no accountId set
         });
 
     });

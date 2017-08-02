@@ -213,10 +213,10 @@ export class Category extends PRecord({
     }
 
     /** Is this an "automatic" category (see 'rules' attribute)? */
-    get isAutomatic() { return this.rules === null; }
+    get isAutomatic(): boolean { return this.rules === null; }
 
     /** Get the currency of this category. */
-    get currency() { return SUPPORTED_CURRENCIES[this.currencyCode]; }
+    get currency(): Currency { return SUPPORTED_CURRENCIES[this.currencyCode]; }
 
     /**
      * Given a JS object which may be JSON-serializable, convert it to the proper

@@ -1,8 +1,8 @@
 import * as Immutable from 'immutable';
-import PDate from './pdate';
 import { Account } from './account';
 import { Category, CategoryGroup } from './category';
 import { Currency, SUPPORTED_CURRENCIES } from './currency';
+import PDate from './pdate';
 import { Transaction } from './transaction';
 import { __, assert, assertIsNumber, PRecord } from './util';
 // Private constants used to create private fields on a Record subclass:
@@ -16,14 +16,15 @@ const _categories = "^c";
 const _categoryGroups = "^g";
 /** Key for private field containing OrderedMap of transactions */
 const _transactions = "^n";
-// Private symbols used for other attributes that aren't formal fields:
-const _accountBalances = Symbol();
-const _transactionAccountBalances = Symbol();
 // Prophecy/Budget class version
 // The major version should be changed when backwards compatibility is broken.
 // The minor version should be changed when new features are added in a backwards-compatible way.
 export const majorVersion = 0;
 export const minorVersion = 1;
+const AccountMap = (...args) => Immutable.OrderedMap(...args);
+const CategoryMap = (...args) => Immutable.OrderedMap(...args);
+const CategoryGroupMap = (...args) => Immutable.OrderedMap(...args);
+const TransactionMap = (...args) => Immutable.OrderedMap(...args);
 /**
  * Class that describes a budget.
  *
@@ -34,9 +35,9 @@ export class Budget extends PRecord({
     id: null,
     name: __("New Budget"),
     /** Start date of the budget. Always of type PDate, and always less than or equal to end date. */
-    startDate: null,
+    startDate: new PDate(0),
     /** End date of the budget. Always of type PDate, and always greater than or equal to start date. */
-    endDate: null,
+    endDate: new PDate(0),
     /**
      * ISO 4217 currency code for the budget. Individual accounts may use different currencies.
      * This setting does not directly have any effect as far as Prophecy is concerned, but it
@@ -45,17 +46,19 @@ export class Budget extends PRecord({
      * It's best to read this value as a Currency object using the 'currency' getter.
      */
     currencyCode: 'USD',
+    // Private fields below. Once typescript supports using computed property names as fields,
+    // switch back to that.
     /** Ordered map of Accounts, in a custom order specified by the user. See accounts() getter. */
-    [_accounts]: Immutable.OrderedMap(),
+    '^a': AccountMap(),
     /** Map of Categories, keyed by ID, ordered by category group order, and in a custom order within each group. See categories() getter. */
-    [_categories]: Immutable.OrderedMap(),
+    '^c': CategoryMap(),
     /** Ordered map of CategoryGroups, in a custom order specified by the user. See categoryGroups() getter. */
-    [_categoryGroups]: Immutable.OrderedMap(),
+    '^g': CategoryGroupMap(),
     /** _transactions: Stores transactions. See transactions() getter. */
-    [_transactions]: Immutable.OrderedMap(),
+    '^n': TransactionMap(),
 }) {
-    constructor(values) {
-        values = Object.assign({}, values || {}); // Don't modify the argument itself
+    constructor(origValues) {
+        const values = Object.assign({}, origValues || {}); // Don't modify the argument itself
         // Budget must always have a valid date range:
         if (values.startDate === undefined || values.endDate === undefined) {
             const year = PDate.today().year;
@@ -65,26 +68,31 @@ export class Budget extends PRecord({
         // Allow passing 'accounts' into the constructor. It can be any iterable with Account-typed values
         if (values.accounts !== undefined) {
             // Don't trust the keys (if any) of values.accounts; create new keys:
-            values[_accounts] = new Immutable.OrderedMap(Immutable.Seq.Indexed(values.accounts).map(a => [a.id, a]));
+            values[_accounts] = AccountMap(Immutable.Seq.Indexed(values.accounts).map((a) => [a.id, a]));
             delete values.accounts;
         }
         // Allow passing 'categoryGroups' into the constructor. It can be any iterable with CategoryGroup-typed values.
         if (values.categoryGroups !== undefined) {
-            values[_categoryGroups] = new Immutable.OrderedMap(Immutable.Seq.Indexed(values.categoryGroups).map(cg => [cg.id, cg]));
+            values[_categoryGroups] = CategoryGroupMap(Immutable.Seq.Indexed(values.categoryGroups).map((cg) => [cg.id, cg]));
             delete values.categoryGroups;
         }
         // Allow passing 'categories' into the constructor. It can be any iterable with Category-typed values
         if (values.categories !== undefined) {
+            const categoriesIterable = Immutable.Seq.Indexed(values.categories);
+            const categoryGroups = values[_categoryGroups];
             // Don't trust the keys (if any) of values.categories; create new keys.
             // Also ensure that all categories are sorted by group in the same order as CategoryGroups is sorted.
-            values[_categories] = _createOrderedCategoryMap(values.categories, values[_categoryGroups]);
+            if (categoryGroups === undefined) {
+                throw new Error('cannot have categories without category groups.');
+            }
+            values[_categories] = _createOrderedCategoryMap(categoriesIterable, categoryGroups);
             delete values.categories;
         }
         // Allow passing 'transactions' into the constructor. It can be any iterable with Transaction-typed values
         if (values.transactions !== undefined) {
             assert(values[_transactions] === undefined); // We expect 'transactions' or _transactions, but not both.
             // Don't trust the keys (if any) or the ordering of values.transactions; create new keys and force a sort:
-            values[_transactions] = new Immutable.OrderedMap(Immutable.Seq.Indexed(values.transactions).sortBy(Budget.transactionSorter).map(t => [t.id, t]));
+            values[_transactions] = TransactionMap(Immutable.Seq.Indexed(values.transactions).sortBy(Budget.transactionSorter).map((t) => [t.id, t]));
             delete values.transactions;
         }
         super(values);
@@ -101,12 +109,16 @@ export class Budget extends PRecord({
         this.categoryGroups.forEach(category => assert(category instanceof CategoryGroup));
         assert(this.categories instanceof Immutable.OrderedMap);
         this.categories.forEach(category => {
-            assert(category instanceof Category);
+            if (!(category instanceof Category)) {
+                throw new Error("categories must all be of type Category");
+            }
             category.assertIsValidForBudget(this);
         });
         assert(this.transactions instanceof Immutable.OrderedMap);
         this.transactions.forEach(transaction => {
-            assert(transaction instanceof Transaction);
+            if (!(transaction instanceof Transaction)) {
+                throw new Error("Transactions must be of type Transaction");
+            }
             transaction.assertIsValidForBudget(this);
         });
     }
@@ -128,7 +140,7 @@ export class Budget extends PRecord({
      */
     deleteCategory(id) {
         // Change all Transaction references to that category to null:
-        const transactions = this[_transactions].map(t => t.set('detail', t.detail.map(d => d.update('categoryId', categoryId => categoryId === id ? null : categoryId))));
+        const transactions = this[_transactions].map((t) => t.set('detail', t.detail.map((d) => d.update('categoryId', categoryId => categoryId === id ? null : categoryId)).toList()));
         return this.merge({
             [_categories]: this[_categories].delete(id),
             [_transactions]: transactions,
@@ -142,12 +154,14 @@ export class Budget extends PRecord({
      *
      * This method cannot be used to change the order of categories (use positionCategory).
      *
-     * @param {Account} category - The category to add/modify
+     * @param {Category} category - The category to add/modify
      * @returns {Budget} A new Budget with the desired change.
      */
     updateCategory(category) {
         assert(category instanceof Category);
-        assertIsNumber(category.id);
+        if (typeof category.id !== 'number') {
+            throw new Error("Invalid category ID.");
+        }
         const origCategory = this.categories.get(category.id);
         if (origCategory === undefined || origCategory.groupId !== category.groupId) {
             // The group ID has changed. We need to carefully ensure that this.categories
@@ -171,7 +185,7 @@ export class Budget extends PRecord({
         assertIsNumber(newIndex);
         const category = this.categories.get(categoryId);
         assert(category instanceof Category);
-        const groupCategories = this.categories.filter(cat => cat.groupId === category.groupId);
+        const groupCategories = this.categories.filter((cat) => cat.groupId === category.groupId);
         assert(newIndex >= 0 && newIndex <= groupCategories.size);
         // this.categories is ordered first by category group order, then by custom order within each group.
         // Our goal is to move the category around within the group, but keep the overall map still sorted
@@ -179,7 +193,7 @@ export class Budget extends PRecord({
         const currentIndexOverall = this.categories.keySeq().keyOf(categoryId);
         const currentIndexWithinGroup = groupCategories.keySeq().keyOf(categoryId);
         const newIndexOverall = currentIndexOverall + (newIndex - currentIndexWithinGroup);
-        const newCategories = new Immutable.OrderedMap(this.categories.toList().filter(cat => cat.id !== categoryId).insert(newIndexOverall, category).map(a => [a.id, a]));
+        const newCategories = CategoryMap(this.categories.toList().filter((cat) => cat.id !== categoryId).toList().insert(newIndexOverall, category).map((a) => [a.id, a]));
         return this.set(_categories, newCategories);
     }
     /**
@@ -188,7 +202,7 @@ export class Budget extends PRecord({
      * @returns {Budget} - A new Budget with the desired change.
      */
     deleteCategoryGroup(id) {
-        assert(this.categories.filter(cat => cat.groupId === id).isEmpty(), "Only empty category groups can be deleted.");
+        assert(this.categories.filter((cat) => cat.groupId === id).isEmpty(), "Only empty category groups can be deleted.");
         return this.set(_categoryGroups, this[_categoryGroups].delete(id));
     }
     /**
@@ -199,12 +213,14 @@ export class Budget extends PRecord({
      *
      * This method cannot be used to change the order of category groups (use positionCategoryGroup).
      *
-     * @param {Account} categoryGroup - The category group to add/modify
+     * @param {CategoryGroup} categoryGroup - The category group to add/modify
      * @returns {Budget} A new Budget with the desired change.
      */
     updateCategoryGroup(categoryGroup) {
         assert(categoryGroup instanceof CategoryGroup);
-        assertIsNumber(categoryGroup.id);
+        if (typeof categoryGroup.id !== 'number') {
+            throw new Error("Invalid Category Group ID");
+        }
         return this.set(_categoryGroups, this[_categoryGroups].set(categoryGroup.id, categoryGroup));
     }
     /**
@@ -219,7 +235,7 @@ export class Budget extends PRecord({
         assertIsNumber(newIndex);
         const categoryGroup = this.categoryGroups.get(groupId);
         assert(categoryGroup instanceof CategoryGroup);
-        const newCategoryGroups = new Immutable.OrderedMap(this.categoryGroups.toList().filter(g => g.id !== groupId).insert(newIndex, categoryGroup).map(a => [a.id, a]));
+        const newCategoryGroups = CategoryGroupMap(this.categoryGroups.toList().filter((g) => g.id !== groupId).toList().insert(newIndex, categoryGroup).map((a) => [a.id, a]));
         return this.set(_categoryGroups, newCategoryGroups);
     }
     /**
@@ -229,8 +245,8 @@ export class Budget extends PRecord({
      */
     deleteAccount(id) {
         // Change all Transaction references to that account to null:
-        const transactions = this[_transactions].map(t => {
-            if (t.accountId == id) {
+        const transactions = this[_transactions].map((t) => {
+            if (t.accountId === id) {
                 return t.set("accountId", null);
             }
             return t;
@@ -253,7 +269,9 @@ export class Budget extends PRecord({
      */
     updateAccount(newAccount) {
         assert(newAccount instanceof Account);
-        assertIsNumber(newAccount.id);
+        if (typeof newAccount.id !== 'number') {
+            throw new Error("account must have ID.");
+        }
         const newAccounts = this[_accounts].set(newAccount.id, newAccount);
         return this.set(_accounts, newAccounts);
     }
@@ -269,7 +287,7 @@ export class Budget extends PRecord({
         assertIsNumber(newIndex);
         const account = this.accounts.get(accountId);
         assert(account instanceof Account);
-        const newAccounts = new Immutable.OrderedMap(this.accounts.toList().filter(a => a.id !== accountId).insert(newIndex, account).map(a => [a.id, a]));
+        const newAccounts = AccountMap(this.accounts.toList().filter((a) => a.id !== accountId).toList().insert(newIndex, account).map((a) => [a.id, a]));
         return this.set(_accounts, newAccounts);
     }
     /**
@@ -294,15 +312,17 @@ export class Budget extends PRecord({
      */
     updateTransaction(newTransaction) {
         assert(newTransaction instanceof Transaction, "expected Transaction");
-        assertIsNumber(newTransaction.id, "Transaction instances must have numeric ID.");
-        assert(newTransaction.accountId === null || this.accounts.has(newTransaction.accountId), "accountId must be valid.");
         const id = newTransaction.id;
+        if (typeof id !== 'number') {
+            throw new Error("Transaction must have an ID.");
+        }
+        assert(newTransaction.accountId === null || this.accounts.has(newTransaction.accountId), "accountId must be valid.");
         let sortRequired = true;
         if (this[_transactions].has(id)) {
             // We are replacing an existing value:
             const oldTransaction = this[_transactions].get(id);
             // We'll only need to re-sort transactions if the date has changed:
-            sortRequired = (newTransaction.date !== +oldTransaction.date);
+            sortRequired = (+(newTransaction.date || -1) !== +(oldTransaction.date || -1));
         }
         else {
             // We are inserting a new value.
@@ -321,31 +341,33 @@ export class Budget extends PRecord({
      * as the running total of the relevant account as of each transaction.
      */
     _computeBalances() {
-        assert(this[_accountBalances] === undefined, "_computeBalances() should only run once per Budget instance.");
+        assert(this._accountBalances === undefined, "_computeBalances() should only run once per Budget instance.");
         // Get the initial balance of each account:
-        const accountBalances = this.accounts.map(account => account.initialBalance).toJS();
+        const accountBalances = this.accounts.map((account) => account.initialBalance).toJS();
         const transactionBalances = {};
-        // Use accountBalances[null] to represents the total 'amount' of transactions that
-        // have no account set. The currency of this amount is unknonwn so the absolute
-        // amount is meaningless; we mostly care if it's zero or not.
-        accountBalances[null] = 0;
-        for (let transaction of this.transactions.filterNot(t => t.pending).values()) {
-            const balance = accountBalances[transaction.accountId] += transaction.amount; // Note that transaction.accountId may be null
-            if (transaction.accountId) {
-                transactionBalances[transaction.id] = balance;
+        for (const transaction of this.transactions.values()) {
+            if (transaction.pending || transaction.accountId === null) {
+                // Only define a "running balance for this account as of this transaction" if there is an accountId and the transaction is not pending
+                continue;
+            }
+            else {
+                const balance = accountBalances[transaction.accountId] += transaction.amount;
+                if (transaction.id !== null) {
+                    transactionBalances[transaction.id] = balance;
+                }
             }
         }
         // We cache the results and make them immutable. We don't have to worry about cache
         // invalidation; any change to Budget will create a new object with an empty cache.
-        this[_accountBalances] = Object.freeze(accountBalances);
-        this[_transactionAccountBalances] = Object.freeze(transactionBalances);
+        this._accountBalances = Object.freeze(accountBalances);
+        this._transactionAccountBalances = Object.freeze(transactionBalances);
     }
     /** Get an object which contains balance of each account keyed by accountId, considering all non-pending transactions */
     get accountBalances() {
-        if (this[_accountBalances] === undefined) {
+        if (this._accountBalances === undefined) {
             this._computeBalances();
         }
-        return this[_accountBalances];
+        return this._accountBalances;
     }
     /**
      * Get the balance of any account as of the specified transaction.
@@ -354,20 +376,20 @@ export class Budget extends PRecord({
      * @param {number} transactionId - The transaction to use as a reference point
      * @param {number} accountId - the account whose balance to return
      * @returns {number|undefined} The balance of the specified account as of the specified transaction
-     **/
+     */
     accountBalanceAsOfTransaction(transactionId, accountId) {
-        const transactions = this.transactions.filter(txn => txn.date !== null && txn.pending === false);
+        const transactions = this.transactions.filter((txn) => txn.date !== null && txn.pending === false);
         const transaction = transactions.get(transactionId);
         const account = this.accounts.get(accountId);
         assert(account !== undefined);
         if (transaction === undefined) {
             return undefined; // Probably a pending transaction or one without a date.
         }
-        if (this[_accountBalances] === undefined) {
+        if (this._accountBalances === undefined) {
             this._computeBalances();
         }
-        if (transaction.accountId == accountId) {
-            return this[_transactionAccountBalances][transactionId];
+        if (transaction.accountId === accountId) {
+            return this._transactionAccountBalances[transactionId];
         }
         else {
             // Account balances are computed per transaction.
@@ -375,9 +397,9 @@ export class Budget extends PRecord({
             // and return the account balance as of that transaction.
             const index = transactions.keySeq().keyOf(transactionId); // The index of the specified transaction
             const precedingTransactions = transactions.valueSeq().slice(0, index);
-            const lastAccountTransaction = precedingTransactions.findLast(txn => txn.accountId === accountId);
+            const lastAccountTransaction = precedingTransactions.findLast((txn) => txn.accountId === accountId);
             if (lastAccountTransaction) {
-                return this[_transactionAccountBalances][lastAccountTransaction.id];
+                return this._transactionAccountBalances[lastAccountTransaction.id];
             }
             else {
                 return account.initialBalance;
@@ -397,10 +419,14 @@ export class Budget extends PRecord({
         assert(date <= this.endDate);
         return Immutable.Map().withMutations(map => {
             for (let txn of this.transactions.values()) {
-                if (txn.date > date) {
+                if (txn.date === null || txn.date > date) {
                     break;
                 }
-                txn.detail.forEach(d => map.set(d.categoryId, map.get(d.categoryId, 0) + d.amount));
+                txn.detail.forEach((d) => {
+                    if (d.categoryId !== null) {
+                        map.set(d.categoryId, map.get(d.categoryId, 0) + d.amount);
+                    }
+                });
             }
         });
     }
@@ -428,16 +454,19 @@ export class Budget extends PRecord({
         assert(date >= this.startDate);
         assert(date <= this.endDate);
         return Immutable.Map().withMutations(map => {
-            for (let category of this.categories.values()) {
+            for (const category of this.categories.values()) {
+                if (category.id === null) {
+                    continue; // Exclude categories with no ID.
+                }
                 let budgetAmount = 0;
-                if (category.isAutomatic) {
+                if (category.rules === null) {
                     if (transactionCategoryBalances === null) {
                         transactionCategoryBalances = this.categoryBalancesOnDate(date);
                     }
                     budgetAmount = transactionCategoryBalances.get(category.id, 0);
                 }
                 else {
-                    category.rules.forEach(rule => {
+                    category.rules.forEach((rule) => {
                         budgetAmount += rule.amount * rule.countOccurrencesBetween(this.startDate, date);
                     });
                 }
@@ -446,7 +475,7 @@ export class Budget extends PRecord({
         });
     }
     toJS() {
-        let result = super.toJS();
+        const result = super.toJS();
         // Remove private keys:
         delete result[_accounts];
         delete result[_categories];
@@ -473,7 +502,7 @@ export class Budget extends PRecord({
     static fromJS(obj) {
         // The JS serialization won't be typed, but the constructor expects types like Catgory, Transaction, etc:
         const values = Object.assign({}, obj);
-        for (let dateField of ['startDate', 'endDate']) {
+        for (const dateField of ['startDate', 'endDate']) {
             if (values[dateField] !== null) {
                 assertIsNumber(values[dateField]);
                 values[dateField] = new PDate(values[dateField]);
@@ -485,13 +514,13 @@ export class Budget extends PRecord({
             { key: "categoryGroups", type: CategoryGroup },
             { key: "transactions", type: Transaction },
         ];
-        for (let { key, type } of typedLists) {
-            values[key] = values[key].map(entry => type.fromJS(entry));
+        for (const { key, type } of typedLists) {
+            values[key] = values[key].map((entry) => type.fromJS(entry));
         }
         return new this(values);
     }
     static transactionSorter(transaction) {
-        return (+transaction.date || 999999); // Sort 'null' dates after the highest date
+        return transaction.date === null ? 999999 : +transaction.date; // Sort 'null' dates after the highest date
     }
 }
 /**
@@ -509,6 +538,7 @@ export class Budget extends PRecord({
  */
 function _createOrderedCategoryMap(categories, categoryGroups) {
     const categoryGroupIdsOrdered = categoryGroups.keySeq();
-    return new Immutable.OrderedMap(Immutable.Seq.Indexed(categories).sortBy(category => categoryGroupIdsOrdered.keyOf(category.groupId)).map(c => [c.id, c]));
+    return Immutable.OrderedMap(categories.sortBy((category) => category.groupId ? categoryGroupIdsOrdered.keyOf(category.groupId) : 0 // groupId should always be a number though.
+    ).map((c) => [c.id, c]));
 }
 //# sourceMappingURL=budget.js.map

@@ -10,6 +10,7 @@
         "max-classes-per-file": [false],
         "member-access": [false],
         "no-bitwise": false,
+        "no-consecutive-blank-lines": false,
         "quotemark": [false],
         "max-line-length": [
             true, 150
