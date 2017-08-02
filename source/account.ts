@@ -1,8 +1,9 @@
 import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {assert, assertIsNumber, PRecord} from './util';
+import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
-interface AccountArguments {
+export interface AccountArguments {
     id?: number|null|undefined;
     name?: string;
     initialBalance?: number;

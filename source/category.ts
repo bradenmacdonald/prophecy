@@ -2,6 +2,7 @@ import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {default as PDate} from './pdate';
 import {assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
+import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
 export enum CategoryRulePeriod {
     Day = 2,
@@ -12,14 +13,14 @@ export enum CategoryRulePeriod {
 
 const allowedRuleValues: number[] = [CategoryRulePeriod.Day, CategoryRulePeriod.Week, CategoryRulePeriod.Month, CategoryRulePeriod.Year];
 
-interface CategoryRuleValues {
+export interface CategoryRuleValues {
     amount?: number;
     startDate?: PDate|number|null;
     endDate?: PDate|number|null;
     repeatN?: number;
     period?: CategoryRulePeriod|null;
 }
-interface CategoryRuleCleanValues extends CategoryRuleValues {
+export interface CategoryRuleCleanValues extends CategoryRuleValues {
     startDate?: PDate|null;
     endDate?: PDate|null;
 }
@@ -131,7 +132,7 @@ export class CategoryRule extends PRecord({
     }
 }
 
-interface CategoryValues {
+export interface CategoryValues {
     id?: number|null;
     name?: string;
     rules?: MappableIterable|null;
@@ -140,7 +141,7 @@ interface CategoryValues {
     groupId?: number|null;
     metadata?: Immutable.Map<string, any>;
 }
-interface CleanCategoryValues extends CategoryValues {
+export interface CleanCategoryValues extends CategoryValues {
     rules?: Immutable.List<CategoryRule>|null;
 }
 

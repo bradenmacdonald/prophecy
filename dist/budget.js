@@ -21,10 +21,10 @@ const _transactions = "^n";
 // The minor version should be changed when new features are added in a backwards-compatible way.
 export const majorVersion = 0;
 export const minorVersion = 1;
-const AccountMap = (...args) => Immutable.OrderedMap(...args);
-const CategoryMap = (...args) => Immutable.OrderedMap(...args);
-const CategoryGroupMap = (...args) => Immutable.OrderedMap(...args);
-const TransactionMap = (...args) => Immutable.OrderedMap(...args);
+export const AccountMap = (...args) => Immutable.OrderedMap(...args);
+export const CategoryMap = (...args) => Immutable.OrderedMap(...args);
+export const CategoryGroupMap = (...args) => Immutable.OrderedMap(...args);
+export const TransactionMap = (...args) => Immutable.OrderedMap(...args);
 /**
  * Class that describes a budget.
  *

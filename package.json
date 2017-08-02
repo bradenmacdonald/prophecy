@@ -26,7 +26,7 @@
     "uglify-es": "^3.0.20"
   },
   "scripts": {
-    "build": "tsc -p source && rollup -c",
+    "build": "cp source/precord.* dist/ && tsc -p source && rollup -c",
     "lint": "tslint source",
     "test": "mocha --colors --require source-map-support/register source/*_test.js source/*/*_test.js",
     "pretest": "npm run lint",

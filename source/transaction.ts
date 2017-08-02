@@ -3,6 +3,7 @@ import {Account} from './account';
 import {Category} from './category';
 import {default as PDate} from './pdate';
 import {__, assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
+import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
 export class TransactionDetail extends PRecord({ // TODO: change to plain Immutable.Record w/ Immutable v4
     amount: 0.0,
@@ -10,7 +11,7 @@ export class TransactionDetail extends PRecord({ // TODO: change to plain Immuta
     categoryId: null as number|null,
 }) {}
 
-interface TransactionValues {
+export interface TransactionValues {
     id?: number|null;
     date?: PDate|null;
     accountId?: number|null;
@@ -21,7 +22,7 @@ interface TransactionValues {
     isTransfer?: boolean;
     metadata?: Immutable.Map<string, any>;
 }
-interface CleanTransactionValues {
+export interface CleanTransactionValues {
     detail?: Immutable.List<TransactionDetail>;
 }
 

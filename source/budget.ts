@@ -5,6 +5,7 @@ import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import PDate from './pdate';
 import {Transaction, TransactionDetail} from './transaction';
 import {__, assert, assertIsNumber, MappableIterable, PRecord} from './util';
+import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
 
 // Private constants used to create private fields on a Record subclass:
@@ -34,16 +35,16 @@ const enum PrivateFields {
 export const majorVersion = 0;
 export const minorVersion = 1;
 
-type AccountMap = Immutable.OrderedMap<number, Account>;
-const AccountMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Account>(...args);
-type CategoryMap = Immutable.OrderedMap<number, Category>;
-const CategoryMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Category>(...args);
-type CategoryGroupMap = Immutable.OrderedMap<number, CategoryGroup>;
-const CategoryGroupMap = <T>(...args: T[]) => Immutable.OrderedMap<number, CategoryGroup>(...args);
-type TransactionMap = Immutable.OrderedMap<number, Transaction>;
-const TransactionMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Transaction>(...args);
+export type AccountMap = Immutable.OrderedMap<number, Account>;
+export const AccountMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Account>(...args);
+export type CategoryMap = Immutable.OrderedMap<number, Category>;
+export const CategoryMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Category>(...args);
+export type CategoryGroupMap = Immutable.OrderedMap<number, CategoryGroup>;
+export const CategoryGroupMap = <T>(...args: T[]) => Immutable.OrderedMap<number, CategoryGroup>(...args);
+export type TransactionMap = Immutable.OrderedMap<number, Transaction>;
+export const TransactionMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Transaction>(...args);
 
-interface BudgetJSON {
+export interface BudgetJSON {
     id: number|null;
     name: string;
     startDate: number;
@@ -59,7 +60,7 @@ interface BudgetJSON {
     '^g': any;
     '^n': any;
 }
-interface BudgetValues {
+export interface BudgetValues {
     id?: number|null;
     name?: string;
     startDate?: PDate;

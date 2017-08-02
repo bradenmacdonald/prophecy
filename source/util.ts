@@ -41,11 +41,11 @@ export function assertPositiveIntegerOrNull(v: number|null) {
     );
 }
 
-const enum ValidationType {
+export const enum ValidationType {
     Error = 'error',
     Warning = 'warning',
 }
-interface ValidationMessage {
+export interface ValidationMessage {
     type: ValidationType;
     message: string;
     field: string|null;

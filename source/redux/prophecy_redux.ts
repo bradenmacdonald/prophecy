@@ -2,7 +2,7 @@ import {assert, assertIsNumber} from '../util';
 import {Account, Budget, Category, CategoryGroup, PDate, Transaction, TransactionDetail} from '../prophecy';
 import * as ACTION from './actions';
 
-type ActionType = {type: string, [key: string]: any};
+export type ActionType = {type: string, [key: string]: any};
 
 /**
  * The reducer for prophecy. Used to make the Prophecy engine work within a redux app.

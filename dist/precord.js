@@ -1,7 +1,13 @@
 import Immutable from 'immutable';
-import { ValidationContext } from './util';
+import {ValidationContext} from './util';
+
+
+
 // This file is kept in JavaScript until Immutable 4+ is out, as it seems this
 // is the simplest way to get TypeScript to create fully typed PRecord classes.
+
+
+
 /**
  * PRecord: Immutable.Record with a bit of extra functionality
  *
@@ -36,10 +42,10 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
     /**
      * Add some safety checks to the inherited 'withMutations()' method, since it creates
      * Record objects without using the constructor
-     *
+     * 
      * Here we only do one check after any and all changes are applied. This lets
      * many changes be made at once, and _checkInvariants only runs once.
-     *
+     * 
      * @param {function} fn - Mutator function
      * @returns {Object} - New instance of this Record subclass with the given changes.
      */
@@ -53,28 +59,30 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
     }
     /**
      * Assertions to help enforce correct usage.
-     *
+     * 
      * These invariants should include things like type checks, but
      * should be somewhat tolerant of incomplete or inconsistent
      * information - that way, PRecord subclasses can still be used
      * to hold the data for a form as the user fills it out in the UI,
      * for example.
-     *
+     * 
      * More final and contextual validation should take place in
      * _validate().
      **/
-    _checkInvariants() { }
+    _checkInvariants() {}
+
     /**
      * Validate this record.
      * @param {ValidationContext} context - the ValidationContext that specifies the
      * budget that this record will become part of, and provides a place to store the
      * result.
      */
-    _validate(context) { } // eslint-disable-line no-unused-vars
+    _validate(context) {}  // eslint-disable-line no-unused-vars
+
     /**
      * Validate this PRecord subclass.
      * Returns an instance of ValidationResult.
-     *
+     * 
      * @param {Budget} budget - the Prophecy Budget that this record will be part of.
      * @returns {ValidationResult}
      */
@@ -83,6 +91,7 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
         this._validate(context);
         return context.result;
     }
+
     /**
      * Validate this record and throw an exception if any errors are found.
      * @param {Budget} budget - the Prophecy Budget that this record will be part of.
@@ -95,6 +104,7 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
             throw Error(message);
         }
     }
+
     /**
      * Convert from a JSON-friendly native JavaScript object to this PRecord type.
      * @param {Object} obj - JavaScript serialized representation of an instance of this Record subclass.
@@ -103,11 +113,11 @@ export const PRecord = (defaultValues) => class extends Immutable.Record(default
     static fromJS(obj) {
         return new this(obj);
     }
+
     /**
      * Make toJSON an alias of toJS, so PRecord works with JSON.stringify()
      *
      * @returns {Object} - JSON-serialized version of this PRecord subclass.
      */
     toJSON() { return this.toJS(); }
-};
-//# sourceMappingURL=precord.js.map
+}
