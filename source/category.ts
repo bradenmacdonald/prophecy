@@ -138,7 +138,7 @@ interface CategoryValues {
     notes?: string;
     currencyCode?: string;
     groupId?: number|null;
-    metadata: Immutable.Map<string, any>;
+    metadata?: Immutable.Map<string, any>;
 }
 interface CleanCategoryValues extends CategoryValues {
     rules?: Immutable.List<CategoryRule>|null;

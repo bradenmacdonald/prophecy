@@ -64,11 +64,11 @@ interface BudgetValues {
     name?: string;
     startDate?: PDate;
     endDate?: PDate;
-    currencyCode: string;
+    currencyCode?: string;
     accounts?: Account[];
     categories?: Category[];
-    categoryGroups: CategoryGroup[];
-    transactions: Transaction[];
+    categoryGroups?: CategoryGroup[];
+    transactions?: Transaction[];
 }
 interface BudgetPrivateValues extends BudgetValues {
     '^a'?: AccountMap; // Todo: change '^a' to [PrivateFields.accounts] when TypeScript supports that.
@@ -118,7 +118,7 @@ export class Budget extends PRecord({
     private _accountBalances: {readonly [key: number]: number};
     private _transactionAccountBalances: {readonly [transactionId: number]: number};
 
-    constructor(origValues: BudgetValues) {
+    constructor(origValues?: BudgetValues) {
         const values: BudgetPrivateValues = Object.assign({}, origValues || {}); // Don't modify the argument itself
         // Budget must always have a valid date range:
         if (values.startDate === undefined || values.endDate === undefined) {

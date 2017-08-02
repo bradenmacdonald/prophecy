@@ -49,8 +49,8 @@ export function reducer(state = new Budget(), action) {
             if (action.linkNullTransactions) {
                 // Implement the "linkNullTransactions" param, required to make DELETE_ACCOUNT fully invertable:
                 assert(existingAccount === undefined); // linkNullTransactions is only allowed for Account insertions
-                const nullTransactions = newState.transactions.filter(t => t.accountId == null);
-                action.linkNullTransactions.forEach(txnId => {
+                const nullTransactions = newState.transactions.filter((t) => t.accountId == null);
+                action.linkNullTransactions.forEach((txnId) => {
                     const txn = nullTransactions.get(txnId);
                     if (txn) {
                         newState = newState.updateTransaction(txn.set('accountId', action.id));
@@ -125,7 +125,7 @@ export function reducer(state = new Budget(), action) {
         }
         case ACTION.UPDATE_MULTIPLE_TRANSACTIONS: {
             let newState = state;
-            action.subActions.forEach(subAction => {
+            action.subActions.forEach((subAction) => {
                 assert(subAction.type === ACTION.UPDATE_TRANSACTION || subAction.type === ACTION.DELETE_TRANSACTION);
                 assert(subAction.budgetId === undefined || subAction.budgetId === state.id);
                 newState = reducer(newState, subAction);
@@ -161,10 +161,11 @@ export function inverter(state, action) {
             }
             case ACTION.SET_DATE: {
                 const data = {};
-                for (let dateType of ['startDate', 'endDate']) {
-                    if (dateType in action) {
-                        data[dateType] = +state[dateType];
-                    }
+                if ('startDate' in action) {
+                    data.startDate = +state.startDate;
+                }
+                if ('endDate' in action) {
+                    data.endDate = +state.endDate;
                 }
                 return data;
             }
@@ -178,7 +179,7 @@ export function inverter(state, action) {
                     const data = acct.toJS();
                     delete data.id;
                     // Restore the associated transactions that will have their accountId set null:
-                    const linkNullTransactions = state.transactions.valueSeq().filter(t => t.accountId == action.id).map(t => t.id);
+                    const linkNullTransactions = state.transactions.valueSeq().filter((t) => t.accountId == action.id).map((t) => t.id);
                     const index = state.accounts.keySeq().keyOf(action.id);
                     return { type: ACTION.UPDATE_ACCOUNT, id: action.id, data, linkNullTransactions, index };
                 }
@@ -194,8 +195,9 @@ export function inverter(state, action) {
                     if ('data' in action) {
                         inverse.data = {};
                         for (let key in action.data) {
-                            if (acctJS[key] !== action.data[key]) {
-                                inverse.data[key] = acctJS[key];
+                            const oldValue = acctJS[key];
+                            if (oldValue !== action.data[key]) {
+                                inverse.data[key] = oldValue;
                             }
                         }
                     }
@@ -222,14 +224,14 @@ export function inverter(state, action) {
                     // Restore the associated transaction details that will have their categoryId set null.
                     // We do this by including a list with tuples of (transaction ID, detail index).
                     const linkTransactionDetails = [];
-                    state.transactions.forEach(txn => {
+                    state.transactions.forEach((txn) => {
                         txn.detail.forEach((detail, idx) => {
                             if (detail.categoryId === category.id) {
                                 linkTransactionDetails.push([txn.id, idx]);
                             }
                         });
                     });
-                    const index = state.categories.filter(cat => cat.groupId == category.groupId).keySeq().keyOf(action.id);
+                    const index = state.categories.filter((cat) => cat.groupId == category.groupId).keySeq().keyOf(action.id);
                     return { type: ACTION.UPDATE_CATEGORY, id: action.id, data, linkTransactionDetails, index };
                 }
                 return ACTION.NOOP;
@@ -244,14 +246,15 @@ export function inverter(state, action) {
                     if ('data' in action) {
                         inverse.data = {};
                         for (let key in action.data) {
-                            if (categoryJS[key] !== action.data[key]) {
-                                inverse.data[key] = categoryJS[key];
+                            const oldValue = categoryJS[key];
+                            if (oldValue !== action.data[key]) {
+                                inverse.data[key] = oldValue;
                             }
                         }
                     }
                     if ('index' in action) {
                         // Was the index/position of this category within the group changed?
-                        const oldIndex = state.categories.filter(cat => cat.groupId == category.groupId).keySeq().keyOf(action.id);
+                        const oldIndex = state.categories.filter((cat) => cat.groupId == category.groupId).keySeq().keyOf(action.id);
                         if (action.index !== oldIndex) {
                             inverse.index = oldIndex;
                         }
@@ -283,8 +286,9 @@ export function inverter(state, action) {
                     if ('data' in action) {
                         inverse.data = {};
                         for (let key in action.data) {
-                            if (groupJS[key] !== action.data[key]) {
-                                inverse.data[key] = groupJS[key];
+                            const oldValue = groupJS[key];
+                            if (oldValue !== action.data[key]) {
+                                inverse.data[key] = oldValue;
                             }
                         }
                     }
@@ -320,8 +324,9 @@ export function inverter(state, action) {
                     const txnJS = txn.toJS();
                     let data = {};
                     for (let key in action.data) {
-                        if (txnJS[key] !== action.data[key]) {
-                            data[key] = txnJS[key];
+                        const oldValue = txnJS[key];
+                        if (oldValue !== action.data[key]) {
+                            data[key] = oldValue;
                         }
                     }
                     return { id: action.id, data };
@@ -335,7 +340,7 @@ export function inverter(state, action) {
                 let inverseSubActions = [];
                 // Reverse iterate over action.subActions and invert each one:
                 let newState = state;
-                action.subActions.forEach(subAction => {
+                action.subActions.forEach((subAction) => {
                     const inverseSubAction = inverter(newState, subAction);
                     delete inverseSubAction.budgetId; // Delete this since it's redundant
                     inverseSubActions.push(inverseSubAction);

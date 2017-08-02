@@ -20,9 +20,9 @@ import {ValidationContext} from './util';
  * @returns {*} - A class that can be extended to create a new PRecord subclass
  */
 export const PRecord = (defaultValues) => class extends Immutable.Record(defaultValues) {
-    _skipChecks = false;
     constructor(values) {
         super(values);
+        this._skipChecks = false;
         this._checkInvariants();
     }
     /**

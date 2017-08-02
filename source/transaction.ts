@@ -18,8 +18,8 @@ interface TransactionValues {
     detail?: MappableIterable;
     userId?: number|null;
     pending?: boolean;
-    isTransfer: boolean;
-    metadata: Immutable.Map<string, any>;
+    isTransfer?: boolean;
+    metadata?: Immutable.Map<string, any>;
 }
 interface CleanTransactionValues {
     detail?: Immutable.List<TransactionDetail>;
