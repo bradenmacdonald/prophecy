@@ -472,23 +472,26 @@ export class Budget extends PRecord({
      * @returns {number|undefined} The balance of the specified account as of the specified transaction
      */
     accountBalanceAsOfTransaction(transactionId: number, accountId: number): number|undefined {
-        const transactions = this.transactions.filter((txn: Transaction) => txn.date !== null && txn.pending === false);
-        const transaction = transactions.get(transactionId);
+        // This is what's slow.
         const account = this.accounts.get(accountId);
         assert(account !== undefined);
-        if (transaction === undefined) {
-            return undefined; // Probably a pending transaction or one without a date.
+        const transaction = this.transactions.get(transactionId);
+        assert(transaction !== undefined);
+        if (transaction.date === null || transaction.pending === true) {
+            return undefined; // We can't define an account balance for these type of transactions
         }
         if (this._accountBalances === undefined) {
             this._computeBalances();
         }
 
         if (transaction.accountId === accountId) {
-            return this._transactionAccountBalances[transactionId];
+            const x = this._transactionAccountBalances[transactionId];
+            return x;
         } else {
             // Account balances are computed per transaction.
             // Find the most recent preceding transaction associated with the specified account,
             // and return the account balance as of that transaction.
+            const transactions = this.transactions.filter((txn: Transaction) => txn.date !== null && txn.pending === false);
             const index = transactions.keySeq().keyOf(transactionId); // The index of the specified transaction
             const precedingTransactions = transactions.valueSeq().slice(0, index);
             const lastAccountTransaction = precedingTransactions.findLast((txn: Transaction) => txn.accountId === accountId);
