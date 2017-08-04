@@ -1,11 +1,11 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../prophecy-dist');
 const Category = Prophecy.Category;
 const CategoryRule = Prophecy.CategoryRule;
 const CategoryGroup = Prophecy.CategoryGroup;
 const CategoryRulePeriod = Prophecy.CategoryRulePeriod;
-const Immutable = Prophecy.Immutable;
 const PDate = Prophecy.PDate;
 
 
@@ -276,7 +276,7 @@ describe('Category', function() {
         it('serializes to JSON and back', () => {
             const categoryJSON = JSON.stringify(category1);
             const category2 = Category.fromJS(JSON.parse(categoryJSON));
-            category2.should.deep.equal(category1);
+            Immutable.is(category1, category2).should.be.true;
             // Make sure this comparison works:
             const otherData = JSON.parse(categoryJSON);
             otherData.id = 456;

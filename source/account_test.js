@@ -1,5 +1,6 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../prophecy-dist');
 const Account = Prophecy.Account;
 
@@ -54,7 +55,7 @@ describe('Account', function() {
     describe('metadata', () => {
         it('is a map and we can set and get values', () => {
             const account = new Account();
-            account.metadata.should.be.an.instanceOf(Prophecy.Immutable.Map);
+            Immutable.Map.isMap(account.metadata).should.be.true;
 
             const account2 = account.setIn(['metadata', 'key1'], 'value1');
             account2.metadata.get('key1').should.equal('value1');

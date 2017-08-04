@@ -103,18 +103,18 @@ export class Budget extends PRecord({
         assert(this.startDate instanceof PDate);
         assert(this.endDate instanceof PDate);
         assert(+this.endDate >= +this.startDate);
-        assert(this.accounts instanceof Immutable.OrderedMap);
+        assert(Immutable.OrderedMap.isOrderedMap(this.accounts));
         this.accounts.forEach(account => assert(account instanceof Account));
-        assert(this.categoryGroups instanceof Immutable.OrderedMap);
+        assert(Immutable.OrderedMap.isOrderedMap(this.categoryGroups));
         this.categoryGroups.forEach(category => assert(category instanceof CategoryGroup));
-        assert(this.categories instanceof Immutable.OrderedMap);
+        assert(Immutable.OrderedMap.isOrderedMap(this.categories));
         this.categories.forEach(category => {
             if (!(category instanceof Category)) {
                 throw new Error("categories must all be of type Category");
             }
             category.assertIsValidForBudget(this);
         });
-        assert(this.transactions instanceof Immutable.OrderedMap);
+        assert(Immutable.OrderedMap.isOrderedMap(this.transactions));
         this.transactions.forEach(transaction => {
             if (!(transaction instanceof Transaction)) {
                 throw new Error("Transactions must be of type Transaction");

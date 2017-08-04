@@ -63,7 +63,7 @@ export class Transaction extends PRecord({
         assertPositiveIntegerOrNull(this.id);
         assert(this.date === null || this.date instanceof PDate);
         assertPositiveIntegerOrNull(this.accountId);
-        assert(this.detail instanceof Immutable.List);
+        assert(Immutable.List.isList(this.detail));
         assert(this.detail.size > 0);
         this.detail.forEach(entry => {
             if (!(entry instanceof TransactionDetail)) {
@@ -76,7 +76,7 @@ export class Transaction extends PRecord({
                 assert(entry.categoryId === null, "Do not set a category for transfer transactions.");
             }
         });
-        assert(this.metadata instanceof Immutable.Map);
+        assert(Immutable.Map.isMap(this.metadata));
     }
     _validate(context) {
         let account = null;
@@ -158,7 +158,7 @@ export class Transaction extends PRecord({
             // objects used to initialize TransactionDetail
             values.detail = Immutable.List(values.detail.map(d => d instanceof TransactionDetail ? d : new TransactionDetail(d)));
         }
-        if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
+        if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);
         }
         return values;

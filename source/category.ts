@@ -180,11 +180,11 @@ export class Category extends PRecord({
         assertPositiveIntegerOrNull(this.id);
         assertPositiveIntegerOrNull(this.groupId);
         if (this.rules !== null) {
-            assert(this.rules instanceof Immutable.List);
+            assert(Immutable.List.isList(this.rules));
             this.rules.forEach(rule => { assert(rule instanceof CategoryRule); });
         }
         assert(this.currency instanceof Currency); // Check that currencyCode is valid.
-        assert(this.metadata instanceof Immutable.Map);
+        assert(Immutable.Map.isMap(this.metadata));
     }
 
     _validate(context: ValidationContext) {
@@ -236,7 +236,7 @@ export class Category extends PRecord({
                 values.rules.map((r: any) => r instanceof CategoryRule ? r : new CategoryRule(r))
             );
         }
-        if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
+        if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);
         }
         return values as CleanCategoryValues;

@@ -31,7 +31,7 @@ export class Account extends PRecord({
     _checkInvariants() {
         assert(this.currency instanceof Currency); // Check that currencyCode is valid.
         assertIsNumber(this.initialBalance);
-        assert(this.metadata instanceof Immutable.Map);
+        assert(Immutable.Map.isMap(this.metadata));
     }
 
     /** Get the currency of this account. */
@@ -50,7 +50,7 @@ export class Account extends PRecord({
      */
     static cleanArgs(values: AccountArguments) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
-        if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
+        if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);
         }
         return values;

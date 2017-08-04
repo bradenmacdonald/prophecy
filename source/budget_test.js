@@ -1,5 +1,6 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../prophecy-dist');
 const Account = Prophecy.Account;
 const Budget = Prophecy.Budget;
@@ -9,7 +10,6 @@ const Currency = Prophecy.Currency;
 const D = Prophecy.PDate.parseTemplateLiteral;
 const PDate = Prophecy.PDate;
 const Transaction = Prophecy.Transaction;
-const Immutable = Prophecy.Immutable;
 
 describe('Budget', function() {
 
@@ -136,7 +136,7 @@ describe('Budget', function() {
                     new Account({id: 15, name: "Test Account", initialBalance: 50000, currencyCode: 'CAD'}),
                 ],
             });
-            budget.accounts.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.accounts).should.be.true;
             budget.accounts.size.should.equal(1);
             budget.accounts.first().name.should.equal("Test Account");
             budget.accounts.get(15).name.should.equal("Test Account");
@@ -147,7 +147,7 @@ describe('Budget', function() {
 
         it('cannot be modified with set()', () => {
             const budget = new Budget();
-            budget.accounts.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.accounts).should.be.true;
             (() => { budget.set('accounts', new Immutable.OrderedMap()); }).should.throw();
         });
 
@@ -256,7 +256,7 @@ describe('Budget', function() {
                     }),
                 ],
             });
-            budget.categories.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.categories).should.be.true;
             budget.categories.size.should.equal(1);
             budget.categories.get(1).name.should.equal("Test Category");
             budget.categories.get(1).groupId.should.equal(1);
@@ -350,7 +350,7 @@ describe('Budget', function() {
             });
 
             it("is enforced at budget init time", () => {
-                budget.categories.should.be.instanceof(Immutable.Map);
+                Immutable.Map.isMap(budget.categories).should.be.true;
                 budget.categories.valueSeq().map(cat => cat.name).toJS().should.deep.equal([
                     "Cat 10-1", // Category group 10 is the first category group
                     "Cat 10-2",
@@ -429,7 +429,7 @@ describe('Budget', function() {
 
         it('cannot be modified with set()', () => {
             const budget = new Budget();
-            budget.categories.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.categories).should.be.true;
             (() => { budget.set('categories', new Immutable.OrderedMap()); }).should.throw();
         });
 
@@ -462,7 +462,7 @@ describe('Budget', function() {
                     new CategoryGroup({id: 2, name: "Third Group"}),
                 ],
             });
-            budget.categoryGroups.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.categoryGroups).should.be.true;
             budget.categoryGroups.size.should.equal(3);
             budget.categoryGroups.first().name.should.equal("First Group");
             budget.categoryGroups.last().name.should.equal("Third Group");
@@ -476,7 +476,7 @@ describe('Budget', function() {
 
         it('cannot be modified with set()', () => {
             const budget = new Budget();
-            budget.categoryGroups.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.categoryGroups).should.be.true;
             (() => { budget.set('categoryGroups', new Immutable.OrderedMap()); }).should.throw();
         });
 
@@ -556,7 +556,7 @@ describe('Budget', function() {
                     new Transaction({id: 15, who: "TestCo"}),
                 ],
             });
-            budget.transactions.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.transactions).should.be.true;
             budget.transactions.size.should.equal(1);
             budget.transactions.first().who.should.equal("TestCo");
             budget.transactions.get(15).who.should.equal("TestCo");
@@ -596,7 +596,7 @@ describe('Budget', function() {
 
         it('cannot be modified with set()', () => {
             const budget = new Budget();
-            budget.transactions.should.be.instanceof(Immutable.OrderedMap);
+            Immutable.OrderedMap.isOrderedMap(budget.transactions).should.be.true;
             (() => { budget.set('transactions', new Immutable.OrderedMap()); }).should.throw();
         });
 

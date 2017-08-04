@@ -1,5 +1,6 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../../prophecy-dist');
 const createStore = require('redux').createStore;
 
@@ -42,7 +43,7 @@ describe('Prophecy Redux API', function() {
             it('has no effect', () => {
                 const budget1 = new Prophecy.Budget({currencyCode: "CAD"});
                 const budget2 = testReducer(budget1, action);
-                should.equal(Prophecy.Immutable.is(budget1, budget2), true);
+                should.equal(Immutable.is(budget1, budget2), true);
             });
 
             it('is its own inverse', () => {
