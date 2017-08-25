@@ -5,10 +5,11 @@
  */
 import * as Imm from 'immutable';
 export const Immutable = Imm;
+export type Immutable = typeof Imm;
 export {PRecord} from './precord';
 
 export {Account, AccountValues} from './account';
-export {Budget, BudgetValues} from './budget';
+export {Budget, BudgetValues, BalanceMap} from './budget';
 export {Category, CategoryValues, CategoryGroup, CategoryRule, CategoryRulePeriod, CategoryRuleValues} from './category';
 export {Currency, CurrencyFormatter, SUPPORTED_CURRENCIES} from './currency';
 export {default as PDate} from './pdate';

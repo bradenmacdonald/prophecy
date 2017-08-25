@@ -71,6 +71,7 @@ export interface BudgetValues {
     categoryGroups?: CategoryGroup[];
     transactions?: Transaction[];
 }
+export type BalanceMap = Immutable.Map<number, number>;
 interface BudgetPrivateValues extends BudgetValues {
     '^a'?: AccountMap; // Todo: change '^a' to [PrivateFields.accounts] when TypeScript supports that.
     '^c'?: CategoryMap;
@@ -510,7 +511,7 @@ export class Budget extends PRecord({
      * @returns {Immutable.Map} - The balance of all categories as of that date, as a map where
      *        the key is the category ID and the value is the balance of that category.
      */
-    categoryBalancesOnDate(date: PDate): Immutable.Map<number, number> {
+    categoryBalancesOnDate(date: PDate): BalanceMap {
         assert(date instanceof PDate);
         assert(date >= this.startDate);
         assert(date <= this.endDate);
@@ -547,8 +548,8 @@ export class Budget extends PRecord({
      * @returns {Immutable.Map} - The budget of all categories as of that date, as a map where
      *        the key is the category ID and the value is the budget amount of that category.
      */
-    categoryBudgetsOnDate(date: PDate): Immutable.Map<number, number> {
-        let transactionCategoryBalances : Immutable.Map<number, number>|null = null;
+    categoryBudgetsOnDate(date: PDate): BalanceMap {
+        let transactionCategoryBalances : BalanceMap|null = null;
         assert(date instanceof PDate);
         assert(date >= this.startDate);
         assert(date <= this.endDate);

@@ -42,6 +42,7 @@ export interface BudgetValues {
     categoryGroups?: CategoryGroup[];
     transactions?: Transaction[];
 }
+export declare type BalanceMap = Immutable.Map<number, number>;
 declare const Budget_base: TypedRecordClass<{
     id: number | null;
     name: string;
@@ -200,7 +201,7 @@ export declare class Budget extends Budget_base {
      * @returns {Immutable.Map} - The balance of all categories as of that date, as a map where
      *        the key is the category ID and the value is the balance of that category.
      */
-    categoryBalancesOnDate(date: PDate): Immutable.Map<number, number>;
+    categoryBalancesOnDate(date: PDate): BalanceMap;
     /**
      * Given a date, get the balance of the specified category, up to and including that date.
      *
@@ -216,7 +217,7 @@ export declare class Budget extends Budget_base {
      * @returns {Immutable.Map} - The budget of all categories as of that date, as a map where
      *        the key is the category ID and the value is the budget amount of that category.
      */
-    categoryBudgetsOnDate(date: PDate): Immutable.Map<number, number>;
+    categoryBudgetsOnDate(date: PDate): BalanceMap;
     toJS(): BudgetJSON;
     /**
      * Convert from a JSON-friendly native JavaScript object (or JSON) to a Budget instance.

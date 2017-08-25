@@ -480,7 +480,8 @@ declare module 'prophecy-engine/budget' {
 	    categories?: Category[];
 	    categoryGroups?: CategoryGroup[];
 	    transactions?: Transaction[];
-	} const Budget_base: TypedRecordClass<{
+	}
+	export type BalanceMap = Immutable.Map<number, number>; const Budget_base: TypedRecordClass<{
 	    id: number | null;
 	    name: string;
 	    startDate: PDate;
@@ -638,7 +639,7 @@ declare module 'prophecy-engine/budget' {
 	     * @returns {Immutable.Map} - The balance of all categories as of that date, as a map where
 	     *        the key is the category ID and the value is the balance of that category.
 	     */
-	    categoryBalancesOnDate(date: PDate): Immutable.Map<number, number>;
+	    categoryBalancesOnDate(date: PDate): BalanceMap;
 	    /**
 	     * Given a date, get the balance of the specified category, up to and including that date.
 	     *
@@ -654,7 +655,7 @@ declare module 'prophecy-engine/budget' {
 	     * @returns {Immutable.Map} - The budget of all categories as of that date, as a map where
 	     *        the key is the category ID and the value is the budget amount of that category.
 	     */
-	    categoryBudgetsOnDate(date: PDate): Immutable.Map<number, number>;
+	    categoryBudgetsOnDate(date: PDate): BalanceMap;
 	    toJS(): BudgetJSON;
 	    /**
 	     * Convert from a JSON-friendly native JavaScript object (or JSON) to a Budget instance.
@@ -1051,9 +1052,10 @@ declare module 'prophecy-engine/prophecy' {
 	 */
 	import * as Imm from 'immutable';
 	export const Immutable: typeof Imm;
+	export type Immutable = typeof Imm;
 	export { PRecord } from 'prophecy-engine/precord';
 	export { Account, AccountValues } from 'prophecy-engine/account';
-	export { Budget, BudgetValues } from 'prophecy-engine/budget';
+	export { Budget, BudgetValues, BalanceMap } from 'prophecy-engine/budget';
 	export { Category, CategoryValues, CategoryGroup, CategoryRule, CategoryRulePeriod, CategoryRuleValues } from 'prophecy-engine/category';
 	export { Currency, CurrencyFormatter, SUPPORTED_CURRENCIES } from 'prophecy-engine/currency';
 	export { default as PDate } from 'prophecy-engine/pdate';
