@@ -21,6 +21,19 @@ const dec31 = D`2016-12-31`;
 
 describe('CategoryRule', function() {
 
+    describe('initialization', () => {
+        it('can be constructed with no arguments', () => {
+            const rule = new CategoryRule();
+            rule.amount.should.equal(0);
+            rule.repeatN.should.equal(1);
+        });
+        it('can be constructed with some arguments', () => {
+            const rule = new CategoryRule({amount: 15});
+            rule.amount.should.equal(15);
+            rule.repeatN.should.equal(1);
+        });
+    });
+
     describe('countOccurrencesBetween', () => {
 
         // Simple tests that can apply to all repetition periods:
@@ -176,6 +189,19 @@ describe('CategoryRule', function() {
 
 
 describe('Category', function() {
+    
+    describe('initialization', () => {
+        it('can be constructed with no arguments', () => {
+            const cat = new Category();
+            cat.name.should.equal("");
+            should.equal(cat.groupId, null);
+        });
+        it('can be constructed with some arguments', () => {
+            const cat = new Category({name: "test"});
+            cat.name.should.equal("test");
+            should.equal(cat.groupId, null);
+        });
+    });
 
     describe('immutability', () => {
 

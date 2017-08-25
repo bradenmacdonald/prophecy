@@ -39,8 +39,8 @@ export class CategoryRule extends PRecord({
     // Possible future addition: round up to nearest business day, nearest Thursday, etc.
 
 }) {
-    constructor(values: CategoryRuleValues) {
-        super(CategoryRule.cleanArgs(values));
+    constructor(values?: CategoryRuleValues) {
+        super(CategoryRule.cleanArgs(values || {}));
     }
     /** Assertions to help enforce correct usage. */
     _checkInvariants() {
@@ -171,8 +171,8 @@ export class Category extends PRecord({
     /** Metadata - meaning depends on the user/application */
     metadata: Immutable.Map<string, any>(),
 }) {
-    constructor(values: CategoryValues) {
-        super(Category.cleanArgs(values));
+    constructor(values?: CategoryValues) {
+        super(Category.cleanArgs(values || {}));
     }
 
     /** Assertions to help enforce correct usage. */

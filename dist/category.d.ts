@@ -28,7 +28,7 @@ declare const CategoryRule_base: TypedRecordClass<{
     period: CategoryRulePeriod | null;
 }>;
 export declare class CategoryRule extends CategoryRule_base {
-    constructor(values: CategoryRuleValues);
+    constructor(values?: CategoryRuleValues);
     /** Assertions to help enforce correct usage. */
     _checkInvariants(): void;
     /**
@@ -81,7 +81,7 @@ declare const Category_base: TypedRecordClass<{
  * Category: Represents a category of spending, such as "Rent", "Groceries", "Insurance", etc.
  */
 export declare class Category extends Category_base {
-    constructor(values: CategoryValues);
+    constructor(values?: CategoryValues);
     /** Assertions to help enforce correct usage. */
     _checkInvariants(): void;
     _validate(context: ValidationContext): void;

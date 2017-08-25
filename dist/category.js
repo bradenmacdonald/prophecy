@@ -22,7 +22,7 @@ export class CategoryRule extends PRecord({
     period: null,
 }) {
     constructor(values) {
-        super(CategoryRule.cleanArgs(values));
+        super(CategoryRule.cleanArgs(values || {}));
     }
     /** Assertions to help enforce correct usage. */
     _checkInvariants() {
@@ -138,7 +138,7 @@ export class Category extends PRecord({
     metadata: Immutable.Map(),
 }) {
     constructor(values) {
-        super(Category.cleanArgs(values));
+        super(Category.cleanArgs(values || {}));
     }
     /** Assertions to help enforce correct usage. */
     _checkInvariants() {

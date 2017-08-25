@@ -3,7 +3,7 @@ import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {assert, assertIsNumber, PRecord} from './util';
 import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
-export interface AccountArguments {
+export interface AccountValues {
     id?: number|null|undefined;
     name?: string;
     initialBalance?: number;
@@ -23,7 +23,7 @@ export class Account extends PRecord({
     /* Arbitrary data defined by the user */
     metadata: Immutable.Map<string, any>(),
 }) {
-    constructor(values: AccountArguments) {
+    constructor(values: AccountValues) {
         super(Account.cleanArgs(values));
     }
 
@@ -48,7 +48,7 @@ export class Account extends PRecord({
      * @param {Object} values - Values for the fields of this account
      * @returns {Object} - Cleaned values for the fields of this account
      */
-    static cleanArgs(values: AccountArguments) {
+    static cleanArgs(values: AccountValues) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);

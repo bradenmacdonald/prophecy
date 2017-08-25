@@ -1,7 +1,7 @@
 import * as Immutable from 'immutable';
 import { Currency } from './currency';
 import { TypedRecordClass } from './precord';
-export interface AccountArguments {
+export interface AccountValues {
     id?: number | null | undefined;
     name?: string;
     initialBalance?: number;
@@ -19,7 +19,7 @@ declare const Account_base: TypedRecordClass<{
  * Account: Represents a bank account, credit card, or a concept like "Cash"
  */
 export declare class Account extends Account_base {
-    constructor(values: AccountArguments);
+    constructor(values: AccountValues);
     /** Assertions to help enforce correct usage. */
     _checkInvariants(): void;
     /** Get the currency of this account. */
@@ -35,5 +35,5 @@ export declare class Account extends Account_base {
      * @param {Object} values - Values for the fields of this account
      * @returns {Object} - Cleaned values for the fields of this account
      */
-    static cleanArgs(values: AccountArguments): AccountArguments;
+    static cleanArgs(values: AccountValues): AccountValues;
 }

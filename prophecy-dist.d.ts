@@ -286,7 +286,7 @@ declare module 'prophecy-engine/category' {
 	    period: CategoryRulePeriod | null;
 	}>;
 	export class CategoryRule extends CategoryRule_base {
-	    constructor(values: CategoryRuleValues);
+	    constructor(values?: CategoryRuleValues);
 	    /** Assertions to help enforce correct usage. */
 	    _checkInvariants(): void;
 	    /**
@@ -338,7 +338,7 @@ declare module 'prophecy-engine/category' {
 	 * Category: Represents a category of spending, such as "Rent", "Groceries", "Insurance", etc.
 	 */
 	export class Category extends Category_base {
-	    constructor(values: CategoryValues);
+	    constructor(values?: CategoryValues);
 	    /** Assertions to help enforce correct usage. */
 	    _checkInvariants(): void;
 	    _validate(context: ValidationContext): void;
@@ -833,7 +833,7 @@ declare module 'prophecy-engine/account' {
 	import * as Immutable from 'immutable';
 	import { Currency } from 'prophecy-engine/currency';
 	import { TypedRecordClass } from 'prophecy-engine/precord';
-	export interface AccountArguments {
+	export interface AccountValues {
 	    id?: number | null | undefined;
 	    name?: string;
 	    initialBalance?: number;
@@ -850,7 +850,7 @@ declare module 'prophecy-engine/account' {
 	 * Account: Represents a bank account, credit card, or a concept like "Cash"
 	 */
 	export class Account extends Account_base {
-	    constructor(values: AccountArguments);
+	    constructor(values: AccountValues);
 	    /** Assertions to help enforce correct usage. */
 	    _checkInvariants(): void;
 	    /** Get the currency of this account. */
@@ -866,7 +866,7 @@ declare module 'prophecy-engine/account' {
 	     * @param {Object} values - Values for the fields of this account
 	     * @returns {Object} - Cleaned values for the fields of this account
 	     */
-	    static cleanArgs(values: AccountArguments): AccountArguments;
+	    static cleanArgs(values: AccountValues): AccountValues;
 	}
 
 }
@@ -1052,12 +1052,12 @@ declare module 'prophecy-engine/prophecy' {
 	import * as Imm from 'immutable';
 	export const Immutable: typeof Imm;
 	export { PRecord } from 'prophecy-engine/precord';
-	export { Account } from 'prophecy-engine/account';
-	export { Budget } from 'prophecy-engine/budget';
-	export { Category, CategoryGroup, CategoryRule, CategoryRulePeriod } from 'prophecy-engine/category';
+	export { Account, AccountValues } from 'prophecy-engine/account';
+	export { Budget, BudgetValues } from 'prophecy-engine/budget';
+	export { Category, CategoryValues, CategoryGroup, CategoryRule, CategoryRulePeriod, CategoryRuleValues } from 'prophecy-engine/category';
 	export { Currency, CurrencyFormatter, SUPPORTED_CURRENCIES } from 'prophecy-engine/currency';
 	export { default as PDate } from 'prophecy-engine/pdate';
-	export { Transaction, TransactionDetail } from 'prophecy-engine/transaction';
+	export { Transaction, TransactionDetail, TransactionValues } from 'prophecy-engine/transaction';
 	export { reducer, inverter } from 'prophecy-engine/redux/prophecy_redux';
 	import * as _actions from 'prophecy-engine/redux/actions';
 	export const actions: typeof _actions;
