@@ -3,9 +3,9 @@ import {Account} from './account';
 import {Category, CategoryGroup, CategoryRule} from './category';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import PDate from './pdate';
+import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 import {Transaction, TransactionDetail} from './transaction';
 import {__, assert, assertIsNumber, MappableIterable, PRecord} from './util';
-import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
 
 
 // Private constants used to create private fields on a Record subclass:
@@ -164,7 +164,7 @@ export class Budget extends PRecord({
     }
 
     /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
+    protected _checkInvariants() {
         assert(this.currency instanceof Currency, "currencyCode must be valid");
         assert(this.startDate instanceof PDate);
         assert(this.endDate instanceof PDate);
@@ -190,16 +190,16 @@ export class Budget extends PRecord({
     }
 
     /** Get the currency of this budget. */
-    get currency(): Currency { return SUPPORTED_CURRENCIES[this.currencyCode]; }
+    public get currency(): Currency { return SUPPORTED_CURRENCIES[this.currencyCode]; }
 
     /** Ordered list of Accounts, in custom order */
-    get accounts(): AccountMap { return this[_accounts]; }
+    public get accounts(): AccountMap { return this[_accounts]; }
 
     /** Map of categories, keyed by ID. Not in order. */
-    get categories(): CategoryMap { return this[_categories]; }
+    public get categories(): CategoryMap { return this[_categories]; }
 
     /** Ordered list of CategoryGroups, in custom order */
-    get categoryGroups(): Immutable.OrderedMap<number, CategoryGroup> { return this[_categoryGroups]; }
+    public get categoryGroups(): Immutable.OrderedMap<number, CategoryGroup> { return this[_categoryGroups]; }
 
     /**
      * Delete a category.
@@ -209,7 +209,7 @@ export class Budget extends PRecord({
      * @param {number} id - ID of the category to delete
      * @returns {Budget} - A new Budget with the desired change.
      */
-    deleteCategory(id: number): Budget {
+    public deleteCategory(id: number): Budget {
         // Change all Transaction references to that category to null:
         const transactions = this[_transactions].map(
             (t: Transaction) => t.set('detail', t.detail.map(
@@ -233,7 +233,7 @@ export class Budget extends PRecord({
      * @param {Category} category - The category to add/modify
      * @returns {Budget} A new Budget with the desired change.
      */
-    updateCategory(category: Category) {
+    public updateCategory(category: Category) {
         assert(category instanceof Category);
         if (typeof category.id !== 'number') {
             throw new Error("Invalid category ID.");
@@ -257,7 +257,7 @@ export class Budget extends PRecord({
      * @param {number} newIndex New position within its category group (0 = first)
      * @returns {Budget} A new Budget with the desired change.
      */
-    positionCategory(categoryId: number, newIndex: number) {
+    public positionCategory(categoryId: number, newIndex: number) {
         assertIsNumber(categoryId);
         assertIsNumber(newIndex);
         const category = this.categories.get(categoryId);
@@ -274,7 +274,10 @@ export class Budget extends PRecord({
         const newIndexOverall = currentIndexOverall + (newIndex - currentIndexWithinGroup);
 
         const newCategories = CategoryMap(
-            this.categories.toList().filter((cat: Category) => cat.id !== categoryId).toList().insert(newIndexOverall, category).map((a: Category) => [a.id, a])
+            this.categories.toList()
+            .filter((cat: Category) => cat.id !== categoryId).toList()
+            .insert(newIndexOverall, category)
+            .map((a: Category) => [a.id, a])
         );
         return this.set(_categories, newCategories);
     }
@@ -284,7 +287,7 @@ export class Budget extends PRecord({
      * @param {number} id - ID of the category group to delete
      * @returns {Budget} - A new Budget with the desired change.
      */
-    deleteCategoryGroup(id: number): Budget {
+    public deleteCategoryGroup(id: number): Budget {
         assert(this.categories.filter((cat: Category) => cat.groupId === id).isEmpty(), "Only empty category groups can be deleted.");
         return this.set(_categoryGroups, this[_categoryGroups].delete(id));
     }
@@ -300,7 +303,7 @@ export class Budget extends PRecord({
      * @param {CategoryGroup} categoryGroup - The category group to add/modify
      * @returns {Budget} A new Budget with the desired change.
      */
-    updateCategoryGroup(categoryGroup: CategoryGroup): Budget {
+    public updateCategoryGroup(categoryGroup: CategoryGroup): Budget {
         assert(categoryGroup instanceof CategoryGroup);
         if (typeof categoryGroup.id !== 'number') {
             throw new Error("Invalid Category Group ID");
@@ -315,13 +318,16 @@ export class Budget extends PRecord({
      * @param {number} newIndex New position in the list of category groups (0 = first)
      * @returns {Budget} A new Budget with the desired change.
      */
-    positionCategoryGroup(groupId: number, newIndex: number): Budget {
+    public positionCategoryGroup(groupId: number, newIndex: number): Budget {
         assertIsNumber(groupId);
         assertIsNumber(newIndex);
         const categoryGroup = this.categoryGroups.get(groupId);
         assert(categoryGroup instanceof CategoryGroup);
         const newCategoryGroups = CategoryGroupMap(
-            this.categoryGroups.toList().filter((g: CategoryGroup) => g.id !== groupId).toList().insert(newIndex, categoryGroup).map((a: CategoryGroup) => [a.id, a])
+            this.categoryGroups.toList()
+            .filter((g: CategoryGroup) => g.id !== groupId).toList()
+            .insert(newIndex, categoryGroup)
+            .map((a: CategoryGroup) => [a.id, a])
         );
         return this.set(_categoryGroups, newCategoryGroups);
     }
@@ -331,7 +337,7 @@ export class Budget extends PRecord({
      * @param {number} id - ID of the account to delete
      * @returns {Budget} - A new Budget with the desired change.
      */
-    deleteAccount(id: number): Budget {
+    public deleteAccount(id: number): Budget {
         // Change all Transaction references to that account to null:
         const transactions = this[_transactions].map((t: Transaction) => {
             if (t.accountId === id) {
@@ -356,7 +362,7 @@ export class Budget extends PRecord({
      * @param {Account} newAccount - The account to add/modify
      * @returns {Budget} A new Budget with the desired change.
      */
-    updateAccount(newAccount: Account): Budget {
+    public updateAccount(newAccount: Account): Budget {
         assert(newAccount instanceof Account);
         if (typeof newAccount.id !== 'number') {
             throw new Error("account must have ID.");
@@ -372,7 +378,7 @@ export class Budget extends PRecord({
      * @param {number} newIndex New position in the list of accounts (0 = first)
      * @returns {Budget} A new Budget with the desired change.
      */
-    positionAccount(accountId: number, newIndex: number): Budget {
+    public positionAccount(accountId: number, newIndex: number): Budget {
         assertIsNumber(accountId);
         assertIsNumber(newIndex);
         const account = this.accounts.get(accountId);
@@ -387,13 +393,13 @@ export class Budget extends PRecord({
      * Ordered list of Transactions, always in chronological order (oldest first; null dates go last)
      * @returns {OrderedMap}
      */
-    get transactions(): TransactionMap { return this[_transactions]; }
+    public get transactions(): TransactionMap { return this[_transactions]; }
     /**
      * Delete a transaction
      * @param {number} id - ID of the transaction to delete
      * @returns {Budget} A new Budget with the desired change.
      */
-    deleteTransaction(id: number): Budget { return this.set(_transactions, this[_transactions].delete(id)); }
+    public deleteTransaction(id: number): Budget { return this.set(_transactions, this[_transactions].delete(id)); }
     /**
      * updateTransaction: Insert or update a transaction.
      *
@@ -403,7 +409,7 @@ export class Budget extends PRecord({
      * @param {Transaction} newTransaction - The transaction to insert/modify.
      * @returns {Budget} A new Budget with the desired change.
      */
-    updateTransaction(newTransaction: Transaction): Budget {
+    public updateTransaction(newTransaction: Transaction): Budget {
         assert(newTransaction instanceof Transaction, "expected Transaction");
         const id = newTransaction.id;
         if (typeof id !== 'number') {
@@ -433,7 +439,7 @@ export class Budget extends PRecord({
      * _computeBalances: Private method that computes the balance of each account as well
      * as the running total of the relevant account as of each transaction.
      */
-    _computeBalances() {
+    private _computeBalances() {
         assert(this._accountBalances === undefined, "_computeBalances() should only run once per Budget instance.");
         // Get the initial balance of each account:
         const accountBalances: {[accountId: number]: number} = this.accounts.map((account: Account) => account.initialBalance).toJS();
@@ -457,7 +463,7 @@ export class Budget extends PRecord({
     }
 
     /** Get an object which contains balance of each account keyed by accountId, considering all non-pending transactions */
-    get accountBalances() {
+    public get accountBalances() {
         if (this._accountBalances === undefined) {
             this._computeBalances();
         }
@@ -472,8 +478,7 @@ export class Budget extends PRecord({
      * @param {number} accountId - the account whose balance to return
      * @returns {number|undefined} The balance of the specified account as of the specified transaction
      */
-    accountBalanceAsOfTransaction(transactionId: number, accountId: number): number|undefined {
-        // This is what's slow.
+    public accountBalanceAsOfTransaction(transactionId: number, accountId: number): number|undefined {
         const account = this.accounts.get(accountId);
         assert(account !== undefined);
         const transaction = this.transactions.get(transactionId);
@@ -511,12 +516,12 @@ export class Budget extends PRecord({
      * @returns {Immutable.Map} - The balance of all categories as of that date, as a map where
      *        the key is the category ID and the value is the balance of that category.
      */
-    categoryBalancesOnDate(date: PDate): BalanceMap {
+    public categoryBalancesOnDate(date: PDate): BalanceMap {
         assert(date instanceof PDate);
         assert(date >= this.startDate);
         assert(date <= this.endDate);
         return Immutable.Map<number, number>().withMutations(map => {
-            for (let txn of this.transactions.values() as IterableIterator<Transaction>) { // TODO Remove 'as' w/ Immutable.js 4+
+            for (const txn of this.transactions.values() as IterableIterator<Transaction>) { // TODO Remove 'as' w/ Immutable.js 4+
                 if (txn.date === null || txn.date > date) { // Dates are ordered oldest first, null last.
                     break;
                 }
@@ -536,7 +541,7 @@ export class Budget extends PRecord({
      * @param {PDate} date - The date
      * @returns {number} - The balance of the specified category as of that date
      */
-    categoryBalanceByDate(categoryId: number, date: PDate): number {
+    public categoryBalanceByDate(categoryId: number, date: PDate): number {
         assert(this.categories.has(categoryId));
         return this.categoryBalancesOnDate(date).get(categoryId, 0);
     }
@@ -548,8 +553,8 @@ export class Budget extends PRecord({
      * @returns {Immutable.Map} - The budget of all categories as of that date, as a map where
      *        the key is the category ID and the value is the budget amount of that category.
      */
-    categoryBudgetsOnDate(date: PDate): BalanceMap {
-        let transactionCategoryBalances : BalanceMap|null = null;
+    public categoryBudgetsOnDate(date: PDate): BalanceMap {
+        let transactionCategoryBalances: BalanceMap|null = null;
         assert(date instanceof PDate);
         assert(date >= this.startDate);
         assert(date <= this.endDate);
@@ -574,7 +579,7 @@ export class Budget extends PRecord({
         });
     }
 
-    toJS(): BudgetJSON {
+    public toJS(): BudgetJSON {
         const result: any = super.toJS();
         // Remove private keys:
         delete result[_accounts];
@@ -600,7 +605,7 @@ export class Budget extends PRecord({
      * @param {Object} obj - JSON or JavaScript serialized representation of an instance of this Budget.
      * @returns {Object} - New instance of this Budget.
      */
-    static fromJS(obj: BudgetJSON|any) {
+    public static fromJS(obj: BudgetJSON|any) {
         // The JS serialization won't be typed, but the constructor expects types like Catgory, Transaction, etc:
         const values = Object.assign({}, obj);
         for (const dateField of ['startDate', 'endDate']) {
@@ -621,7 +626,7 @@ export class Budget extends PRecord({
         return new this(values);
     }
 
-    static transactionSorter(transaction: Transaction): number {
+    public static transactionSorter(transaction: Transaction): number {
         return transaction.date === null ? 999999 : +transaction.date; // Sort 'null' dates after the highest date
     }
 }

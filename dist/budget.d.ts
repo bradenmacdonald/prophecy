@@ -3,8 +3,8 @@ import { Account } from './account';
 import { Category, CategoryGroup } from './category';
 import { Currency } from './currency';
 import PDate from './pdate';
-import { Transaction } from './transaction';
 import { TypedRecordClass } from './precord';
+import { Transaction } from './transaction';
 export declare const majorVersion = 0;
 export declare const minorVersion = 1;
 export declare type AccountMap = Immutable.OrderedMap<number, Account>;
@@ -65,7 +65,7 @@ export declare class Budget extends Budget_base {
     private _transactionAccountBalances;
     constructor(origValues?: BudgetValues);
     /** Assertions to help enforce correct usage. */
-    _checkInvariants(): void;
+    protected _checkInvariants(): void;
     /** Get the currency of this budget. */
     readonly currency: Currency;
     /** Ordered list of Accounts, in custom order */
@@ -180,7 +180,7 @@ export declare class Budget extends Budget_base {
      * _computeBalances: Private method that computes the balance of each account as well
      * as the running total of the relevant account as of each transaction.
      */
-    _computeBalances(): void;
+    private _computeBalances();
     /** Get an object which contains balance of each account keyed by accountId, considering all non-pending transactions */
     readonly accountBalances: {
         readonly [key: number]: number;

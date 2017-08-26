@@ -29,7 +29,7 @@
   },
   "scripts": {
     "build": "cp source/precord.* dist/ && tsc -p source && rollup -c && dts-generator --name prophecy-engine --project source/ --main prophecy-engine/prophecy --out prophecy-dist.d.ts",
-    "lint": "tslint source",
+    "lint": "tslint -p source",
     "test": "mocha --colors --require source-map-support/register source/*_test.js source/*/*_test.js",
     "pretest": "npm run lint",
     "lint-build": "npm run lint && npm run build"

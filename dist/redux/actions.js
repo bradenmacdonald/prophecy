@@ -151,6 +151,6 @@ export const UPDATE_TRANSACTION = prefix + 'UPDATE_TXN';
  *  - subActions (array): array of UPDATE_TRANSACTION and DELETE_TRANSACTION
  *       actions to carry out as part of this action.
  *  - budgetId (string): ID of the budget (optional)
- **/
+ */
 export const UPDATE_MULTIPLE_TRANSACTIONS = prefix + 'UPDATE_MANY_TXN';
 //# sourceMappingURL=actions.js.map

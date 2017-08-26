@@ -260,8 +260,8 @@ declare module 'prophecy-engine/category' {
 	import * as Immutable from 'immutable';
 	import { Currency } from 'prophecy-engine/currency';
 	import { default as PDate } from 'prophecy-engine/pdate';
-	import { MappableIterable, ValidationContext } from 'prophecy-engine/util';
 	import { TypedRecordClass } from 'prophecy-engine/precord';
+	import { MappableIterable, ValidationContext } from 'prophecy-engine/util';
 	export enum CategoryRulePeriod {
 	    Day = 2,
 	    Week = 3,
@@ -288,7 +288,7 @@ declare module 'prophecy-engine/category' {
 	export class CategoryRule extends CategoryRule_base {
 	    constructor(values?: CategoryRuleValues);
 	    /** Assertions to help enforce correct usage. */
-	    _checkInvariants(): void;
+	    protected _checkInvariants(): void;
 	    /**
 	     * countOccurrencesBetween: Based on this rule, determine how many times this amount is repeated
 	     * between dateBegin and DateEnd.
@@ -340,8 +340,8 @@ declare module 'prophecy-engine/category' {
 	export class Category extends Category_base {
 	    constructor(values?: CategoryValues);
 	    /** Assertions to help enforce correct usage. */
-	    _checkInvariants(): void;
-	    _validate(context: ValidationContext): void;
+	    protected _checkInvariants(): void;
+	    protected _validate(context: ValidationContext): void;
 	    /** Is this an "automatic" category (see 'rules' attribute)? */
 	    readonly isAutomatic: boolean;
 	    /** Get the currency of this category. */
@@ -372,8 +372,8 @@ declare module 'prophecy-engine/category' {
 declare module 'prophecy-engine/transaction' {
 	import * as Immutable from 'immutable';
 	import { default as PDate } from 'prophecy-engine/pdate';
-	import { MappableIterable, ValidationContext } from 'prophecy-engine/util';
-	import { TypedRecordClass } from 'prophecy-engine/precord'; const TransactionDetail_base: TypedRecordClass<{
+	import { TypedRecordClass } from 'prophecy-engine/precord';
+	import { MappableIterable, ValidationContext } from 'prophecy-engine/util'; const TransactionDetail_base: TypedRecordClass<{
 	    amount: number;
 	    description: string;
 	    categoryId: number | null;
@@ -415,8 +415,8 @@ declare module 'prophecy-engine/transaction' {
 	    private _cachedAmount;
 	    constructor(values: TransactionValues);
 	    /** Assertions to help enforce correct usage. */
-	    _checkInvariants(): void;
-	    _validate(context: ValidationContext): void;
+	    protected _checkInvariants(): void;
+	    protected _validate(context: ValidationContext): void;
 	    /** Is this a split transaction? */
 	    readonly isSplit: boolean;
 	    /** Get the sum of the amounts of the 'detail' entries */
@@ -442,8 +442,8 @@ declare module 'prophecy-engine/budget' {
 	import { Category, CategoryGroup } from 'prophecy-engine/category';
 	import { Currency } from 'prophecy-engine/currency';
 	import PDate from 'prophecy-engine/pdate';
-	import { Transaction } from 'prophecy-engine/transaction';
 	import { TypedRecordClass } from 'prophecy-engine/precord';
+	import { Transaction } from 'prophecy-engine/transaction';
 	export const majorVersion = 0;
 	export const minorVersion = 1;
 	export type AccountMap = Immutable.OrderedMap<number, Account>;
@@ -503,7 +503,7 @@ declare module 'prophecy-engine/budget' {
 	    private _transactionAccountBalances;
 	    constructor(origValues?: BudgetValues);
 	    /** Assertions to help enforce correct usage. */
-	    _checkInvariants(): void;
+	    protected _checkInvariants(): void;
 	    /** Get the currency of this budget. */
 	    readonly currency: Currency;
 	    /** Ordered list of Accounts, in custom order */
@@ -618,7 +618,7 @@ declare module 'prophecy-engine/budget' {
 	     * _computeBalances: Private method that computes the balance of each account as well
 	     * as the running total of the relevant account as of each transaction.
 	     */
-	    _computeBalances(): void;
+	    private _computeBalances();
 	    /** Get an object which contains balance of each account keyed by accountId, considering all non-pending transactions */
 	    readonly accountBalances: {
 	        readonly [key: number]: number;
@@ -709,8 +709,7 @@ declare module 'prophecy-engine/util' {
 	 * contextual validation of model data.
 	 */
 	export class ValidationResult {
-	    /**@internal */
-	    __validationMessages: ValidationMessage[];
+	    private __validationMessages;
 	    static Warning: ValidationType;
 	    static Error: ValidationType;
 	    readonly warnings: ValidationMessage[];
@@ -721,6 +720,8 @@ declare module 'prophecy-engine/util' {
 	     */
 	    readonly overallIssues: ValidationMessage[];
 	    readonly allIssues: ReadonlyArray<ValidationMessage>;
+	    /** Internal method for use by ValidationContext only. */
+	    _pushMessage(type: ValidationType, message: string, field: string | null): void;
 	}
 	/**
 	 * Context during which PRecord validation happens.
@@ -731,7 +732,6 @@ declare module 'prophecy-engine/util' {
 	    readonly budget: Budget;
 	    private validationResult;
 	    constructor(budget: Budget);
-	    _pushMessage(type: ValidationType, message: string, field: string | null): void;
 	    /**
 	     * Add a warning to the validation result.
 	     *
@@ -853,7 +853,7 @@ declare module 'prophecy-engine/account' {
 	export class Account extends Account_base {
 	    constructor(values: AccountValues);
 	    /** Assertions to help enforce correct usage. */
-	    _checkInvariants(): void;
+	    protected _checkInvariants(): void;
 	    /** Get the currency of this account. */
 	    readonly currency: Currency;
 	    /**
@@ -1012,16 +1012,16 @@ declare module 'prophecy-engine/redux/actions' {
 	 *  - subActions (array): array of UPDATE_TRANSACTION and DELETE_TRANSACTION
 	 *       actions to carry out as part of this action.
 	 *  - budgetId (string): ID of the budget (optional)
-	 **/
+	 */
 	export const UPDATE_MULTIPLE_TRANSACTIONS: string;
 
 }
 declare module 'prophecy-engine/redux/prophecy_redux' {
 	import { Budget } from 'prophecy-engine/prophecy';
-	export type ActionType = {
+	export interface ActionType {
 	    type: string;
 	    [key: string]: any;
-	};
+	}
 	/**
 	 * The reducer for prophecy. Used to make the Prophecy engine work within a redux app.
 	 * @param {Budget} state - the state to modify

@@ -23,7 +23,7 @@ export function assertIsNumber(v) {
  * @param {*} v - Value that is expected to be a positive integer or null
  */
 export function assertPositiveIntegerOrNull(v) {
-    assert(v === null || (typeof v === "number" && parseInt(v.toString()) === v && v > 0), "Expected a positive integer, or null.");
+    assert(v === null || (typeof v === "number" && parseInt(v.toString(), 10) === v && v > 0), "Expected a positive integer, or null.");
 }
 /**
  * ValidationResult: Used with PRecord to provide detailed, flexible,
@@ -31,7 +31,6 @@ export function assertPositiveIntegerOrNull(v) {
  */
 export class ValidationResult {
     constructor() {
-        /**@internal */
         this.__validationMessages = [];
     }
     get warnings() {
@@ -52,6 +51,10 @@ export class ValidationResult {
     get allIssues() {
         return Object.freeze(this.__validationMessages);
     }
+    /** Internal method for use by ValidationContext only. */
+    _pushMessage(type, message, field) {
+        this.__validationMessages.push(Object.freeze({ field, type, message }));
+    }
 }
 ValidationResult.Warning = "warning" /* Warning */;
 ValidationResult.Error = "error" /* Error */;
@@ -65,9 +68,6 @@ export class ValidationContext {
         this.validationResult = new ValidationResult();
         this.budget = budget;
     }
-    _pushMessage(type, message, field) {
-        this.validationResult.__validationMessages.push(Object.freeze({ field, type, message }));
-    }
     /**
      * Add a warning to the validation result.
      *
@@ -76,7 +76,7 @@ export class ValidationContext {
      * @param {*} message - A string describing the validation issue.
      */
     addWarning(field, message) {
-        this._pushMessage("warning" /* Warning */, message, field);
+        this.validationResult._pushMessage("warning" /* Warning */, message, field);
     }
     /**
      * Add an error to the validation result.
@@ -86,7 +86,7 @@ export class ValidationContext {
      * @param {*} message - A string describing the validation issue.
      */
     addError(field, message) {
-        this._pushMessage("error" /* Error */, message, field);
+        this.validationResult._pushMessage("error" /* Error */, message, field);
     }
     get result() { return Object.freeze(this.validationResult); }
 }

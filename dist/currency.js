@@ -84,7 +84,7 @@ export class CurrencyFormatter {
             });
             let symbol = currency.symbols[0];
             const isDefaultCurrency = (currency.code === this.defaultCurrency.code);
-            const symbolConflicts = (!isDefaultCurrency && symbol == this.defaultCurrency.symbols[0]);
+            const symbolConflicts = (!isDefaultCurrency && symbol === this.defaultCurrency.symbols[0]);
             if (symbolConflicts && currency.symbols.length > 1) {
                 symbol = currency.symbols[1];
             }

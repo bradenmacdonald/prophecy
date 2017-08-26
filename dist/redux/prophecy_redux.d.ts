@@ -1,8 +1,8 @@
 import { Budget } from '../prophecy';
-export declare type ActionType = {
+export interface ActionType {
     type: string;
     [key: string]: any;
-};
+}
 /**
  * The reducer for prophecy. Used to make the Prophecy engine work within a redux app.
  * @param {Budget} state - the state to modify

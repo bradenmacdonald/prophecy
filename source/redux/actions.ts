@@ -158,7 +158,7 @@ export const UPDATE_TRANSACTION = prefix + 'UPDATE_TXN';
 /**
  * UPDATE_MULTIPLE_TRANSACTIONS
  * Action to atomically update multiple transactions.
- * 
+ *
  * This is the only "compound action" that itself contains
  * multiple other actions. "Compound actions" are kept to a minimum
  * in order to make it easier for other reducers to watch for
@@ -171,5 +171,5 @@ export const UPDATE_TRANSACTION = prefix + 'UPDATE_TXN';
  *  - subActions (array): array of UPDATE_TRANSACTION and DELETE_TRANSACTION
  *       actions to carry out as part of this action.
  *  - budgetId (string): ID of the budget (optional)
- **/
+ */
 export const UPDATE_MULTIPLE_TRANSACTIONS = prefix + 'UPDATE_MANY_TXN';

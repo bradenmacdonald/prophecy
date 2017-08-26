@@ -39,8 +39,7 @@ export interface ValidationMessage {
  * contextual validation of model data.
  */
 export declare class ValidationResult {
-    /**@internal */
-    __validationMessages: ValidationMessage[];
+    private __validationMessages;
     static Warning: ValidationType;
     static Error: ValidationType;
     readonly warnings: ValidationMessage[];
@@ -51,6 +50,8 @@ export declare class ValidationResult {
      */
     readonly overallIssues: ValidationMessage[];
     readonly allIssues: ReadonlyArray<ValidationMessage>;
+    /** Internal method for use by ValidationContext only. */
+    _pushMessage(type: ValidationType, message: string, field: string | null): void;
 }
 /**
  * Context during which PRecord validation happens.
@@ -61,7 +62,6 @@ export declare class ValidationContext {
     readonly budget: Budget;
     private validationResult;
     constructor(budget: Budget);
-    _pushMessage(type: ValidationType, message: string, field: string | null): void;
     /**
      * Add a warning to the validation result.
      *

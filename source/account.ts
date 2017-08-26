@@ -1,7 +1,7 @@
 import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
-import {assert, assertIsNumber, PRecord} from './util';
 import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
+import {assert, assertIsNumber, PRecord} from './util';
 
 export interface AccountValues {
     id?: number|null|undefined;
@@ -28,14 +28,14 @@ export class Account extends PRecord({
     }
 
     /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
+    protected _checkInvariants() {
         assert(this.currency instanceof Currency); // Check that currencyCode is valid.
         assertIsNumber(this.initialBalance);
         assert(Immutable.Map.isMap(this.metadata));
     }
 
     /** Get the currency of this account. */
-    get currency() { return SUPPORTED_CURRENCIES[this.currencyCode]; }
+    public get currency() { return SUPPORTED_CURRENCIES[this.currencyCode]; }
 
     /**
      * Given a JS object which may be JSON-serializable, convert it to the proper
@@ -48,7 +48,7 @@ export class Account extends PRecord({
      * @param {Object} values - Values for the fields of this account
      * @returns {Object} - Cleaned values for the fields of this account
      */
-    static cleanArgs(values: AccountValues) {
+    public static cleanArgs(values: AccountValues) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);

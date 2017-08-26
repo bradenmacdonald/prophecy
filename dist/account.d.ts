@@ -21,7 +21,7 @@ declare const Account_base: TypedRecordClass<{
 export declare class Account extends Account_base {
     constructor(values: AccountValues);
     /** Assertions to help enforce correct usage. */
-    _checkInvariants(): void;
+    protected _checkInvariants(): void;
     /** Get the currency of this account. */
     readonly currency: Currency;
     /**

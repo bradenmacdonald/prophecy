@@ -1,8 +1,8 @@
 import * as Immutable from 'immutable';
 import { Currency } from './currency';
 import { default as PDate } from './pdate';
-import { MappableIterable, ValidationContext } from './util';
 import { TypedRecordClass } from './precord';
+import { MappableIterable, ValidationContext } from './util';
 export declare enum CategoryRulePeriod {
     Day = 2,
     Week = 3,
@@ -30,7 +30,7 @@ declare const CategoryRule_base: TypedRecordClass<{
 export declare class CategoryRule extends CategoryRule_base {
     constructor(values?: CategoryRuleValues);
     /** Assertions to help enforce correct usage. */
-    _checkInvariants(): void;
+    protected _checkInvariants(): void;
     /**
      * countOccurrencesBetween: Based on this rule, determine how many times this amount is repeated
      * between dateBegin and DateEnd.
@@ -83,8 +83,8 @@ declare const Category_base: TypedRecordClass<{
 export declare class Category extends Category_base {
     constructor(values?: CategoryValues);
     /** Assertions to help enforce correct usage. */
-    _checkInvariants(): void;
-    _validate(context: ValidationContext): void;
+    protected _checkInvariants(): void;
+    protected _validate(context: ValidationContext): void;
     /** Is this an "automatic" category (see 'rules' attribute)? */
     readonly isAutomatic: boolean;
     /** Get the currency of this category. */

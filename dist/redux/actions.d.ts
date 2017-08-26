@@ -138,5 +138,5 @@ export declare const UPDATE_TRANSACTION: string;
  *  - subActions (array): array of UPDATE_TRANSACTION and DELETE_TRANSACTION
  *       actions to carry out as part of this action.
  *  - budgetId (string): ID of the budget (optional)
- **/
+ */
 export declare const UPDATE_MULTIPLE_TRANSACTIONS: string;

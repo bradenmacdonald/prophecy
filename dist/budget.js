@@ -193,7 +193,10 @@ export class Budget extends PRecord({
         const currentIndexOverall = this.categories.keySeq().keyOf(categoryId);
         const currentIndexWithinGroup = groupCategories.keySeq().keyOf(categoryId);
         const newIndexOverall = currentIndexOverall + (newIndex - currentIndexWithinGroup);
-        const newCategories = CategoryMap(this.categories.toList().filter((cat) => cat.id !== categoryId).toList().insert(newIndexOverall, category).map((a) => [a.id, a]));
+        const newCategories = CategoryMap(this.categories.toList()
+            .filter((cat) => cat.id !== categoryId).toList()
+            .insert(newIndexOverall, category)
+            .map((a) => [a.id, a]));
         return this.set(_categories, newCategories);
     }
     /**
@@ -235,7 +238,10 @@ export class Budget extends PRecord({
         assertIsNumber(newIndex);
         const categoryGroup = this.categoryGroups.get(groupId);
         assert(categoryGroup instanceof CategoryGroup);
-        const newCategoryGroups = CategoryGroupMap(this.categoryGroups.toList().filter((g) => g.id !== groupId).toList().insert(newIndex, categoryGroup).map((a) => [a.id, a]));
+        const newCategoryGroups = CategoryGroupMap(this.categoryGroups.toList()
+            .filter((g) => g.id !== groupId).toList()
+            .insert(newIndex, categoryGroup)
+            .map((a) => [a.id, a]));
         return this.set(_categoryGroups, newCategoryGroups);
     }
     /**
@@ -378,7 +384,6 @@ export class Budget extends PRecord({
      * @returns {number|undefined} The balance of the specified account as of the specified transaction
      */
     accountBalanceAsOfTransaction(transactionId, accountId) {
-        // This is what's slow.
         const account = this.accounts.get(accountId);
         assert(account !== undefined);
         const transaction = this.transactions.get(transactionId);
@@ -421,7 +426,7 @@ export class Budget extends PRecord({
         assert(date >= this.startDate);
         assert(date <= this.endDate);
         return Immutable.Map().withMutations(map => {
-            for (let txn of this.transactions.values()) {
+            for (const txn of this.transactions.values()) {
                 if (txn.date === null || txn.date > date) {
                     break;
                 }

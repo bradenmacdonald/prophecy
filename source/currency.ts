@@ -9,10 +9,10 @@ export class Currency {
      * Get the ISO 4217 currency code (uniquely identifies this currency)
      * @return {string} The ISO 4217 currency code.
      */
-    readonly code: string;
-    readonly name: string;
-    readonly symbols: string[];
-    readonly decimals: number;
+    public readonly code: string;
+    public readonly name: string;
+    public readonly symbols: string[];
+    public readonly decimals: number;
     /**
      * Create a currency description.
      * @param {string} code - the ISO 4217 currency code (three characters)
@@ -40,13 +40,13 @@ export class Currency {
      * @param {number} amount - The amount/value to round.
      * @returns {number} The rounded amount/value.
      */
-    roundAmount(amount: number) { return Math.round(amount); }
+    public roundAmount(amount: number) { return Math.round(amount); }
 
     /**
      * Custom JSON serialization
      * @returns {string} - This currency's currency code.
      */
-    toJSON() { return this.code; }
+    public toJSON() { return this.code; }
 }
 
 
@@ -62,13 +62,13 @@ export const SUPPORTED_CURRENCIES: Readonly<{[currencyCode: string]: Currency}> 
 
 class CustomNumberFormat extends Intl.NumberFormat {
     // Store the currency symbol in the formatter as a custom property
-    symbol: string;
+    public symbol: string;
 }
 
 
 export class CurrencyFormatter {
-    readonly defaultCurrency: Currency;
-    readonly locales: string|string[];
+    public readonly defaultCurrency: Currency;
+    public readonly locales: string|string[];
     private rawFormatters: {[currencyCode: string]: Intl.NumberFormat};
     private formatters: {[currencyCode: string]: CustomNumberFormat};
     constructor(defaultCurrency: Currency, locales?: string|string[]) {
@@ -88,7 +88,7 @@ export class CurrencyFormatter {
      * @param {Currency=} currency - one of the currencies from SUPPORTED_CURRENCIES (optional)
      * @return {string} The amount, formatted as a string.
      */
-    formatAmount(amount: number, currency?: Currency) {
+    public formatAmount(amount: number, currency?: Currency) {
         assertIsNumber(amount);
         if (currency === undefined) {
             currency = this.defaultCurrency;
@@ -110,7 +110,7 @@ export class CurrencyFormatter {
             });
             let symbol = currency.symbols[0];
             const isDefaultCurrency = (currency.code === this.defaultCurrency.code);
-            const symbolConflicts = (!isDefaultCurrency && symbol == this.defaultCurrency.symbols[0]);
+            const symbolConflicts = (!isDefaultCurrency && symbol === this.defaultCurrency.symbols[0]);
             if (symbolConflicts && currency.symbols.length > 1) {
                 symbol = currency.symbols[1];
             }
@@ -125,7 +125,7 @@ export class CurrencyFormatter {
      * @param {Currency=} currency - one of the currencies from SUPPORTED_CURRENCIES (optional)
      * @return {string} The amount, formatted as a string, but without any currency symbol.
      */
-    formatAmountRaw(amount: number, currency?: Currency) {
+    public formatAmountRaw(amount: number, currency?: Currency) {
         assertIsNumber(amount);
         if (currency === undefined) {
             currency = this.defaultCurrency;

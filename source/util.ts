@@ -36,7 +36,7 @@ export function assertIsNumber(v: number) {
  */
 export function assertPositiveIntegerOrNull(v: number|null) {
     assert(
-        v === null || (typeof v === "number" && parseInt(v.toString()) === v && v > 0),
+        v === null || (typeof v === "number" && parseInt(v.toString(), 10) === v && v > 0),
         "Expected a positive integer, or null."
     );
 }
@@ -55,32 +55,36 @@ export interface ValidationMessage {
  * contextual validation of model data.
  */
 export class ValidationResult {
-    /**@internal */
-    __validationMessages: ValidationMessage[] = [];
-    static Warning = ValidationType.Warning;
-    static Error = ValidationType.Error;
+    private __validationMessages: ValidationMessage[] = [];
+    public static Warning = ValidationType.Warning;
+    public static Error = ValidationType.Error;
 
-    get warnings() {
+    public get warnings() {
         return this.__validationMessages.filter(msg => msg.type === ValidationType.Warning);
     }
 
-    get errors() {
+    public get errors() {
         return this.__validationMessages.filter(msg => msg.type === ValidationType.Error);
     }
 
-    getFieldIssues(fieldName: string|null) {
+    public getFieldIssues(fieldName: string|null) {
         return this.__validationMessages.filter(msg => msg.field === fieldName);
     }
 
     /**
      * Get an array of all validation issues that are not specific to any one field.
      */
-    get overallIssues() {
+    public get overallIssues() {
         return this.getFieldIssues(null);
     }
 
-    get allIssues() {
+    public get allIssues(): ReadonlyArray<ValidationMessage> {
         return Object.freeze(this.__validationMessages);
+    }
+
+    /** Internal method for use by ValidationContext only. */
+    public _pushMessage(type: ValidationType, message: string, field: string | null) {
+        this.__validationMessages.push(Object.freeze({field, type, message}));
     }
 }
 
@@ -90,15 +94,11 @@ export class ValidationResult {
  * will become part of.
  */
 export class ValidationContext {
-    readonly budget: Budget;
+    public readonly budget: Budget;
     private validationResult = new ValidationResult();
 
     constructor(budget: Budget) {
         this.budget = budget;
-    }
-
-    _pushMessage(type: ValidationType, message: string, field: string | null) {
-        this.validationResult.__validationMessages.push(Object.freeze({field, type, message}));
     }
 
     /**
@@ -108,8 +108,8 @@ export class ValidationContext {
      * or null for warnings that involve multiple fields.
      * @param {*} message - A string describing the validation issue.
      */
-    addWarning(field: string|null, message: string) {
-        this._pushMessage(ValidationType.Warning, message, field);
+    public addWarning(field: string|null, message: string) {
+        this.validationResult._pushMessage(ValidationType.Warning, message, field);
     }
 
     /**
@@ -119,11 +119,11 @@ export class ValidationContext {
      * or null for warnings that involve multiple fields.
      * @param {*} message - A string describing the validation issue.
      */
-    addError(field: string|null, message: string) {
-        this._pushMessage(ValidationType.Error, message, field);
+    public addError(field: string|null, message: string) {
+        this.validationResult._pushMessage(ValidationType.Error, message, field);
     }
 
-    get result() { return Object.freeze(this.validationResult); }
+    public get result() { return Object.freeze(this.validationResult); }
 }
 
 export {PRecord} from './precord';

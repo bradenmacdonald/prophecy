@@ -36,8 +36,10 @@ const LEAP_YEAR = ("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBB
     "JJJJJJJJJJJJJJJJJJJJJJJJJJJJJJJKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKLLLLLLLLLLLLLLLLLLLLLLLLLLLLLLL");
 const DAYS_PER_MONTH = Object.freeze([
     /* Jan */ 31, undefined, /* Mar */ 31, /* Apr */ 30, /* May */ 31, /* Jun */ 30,
-    /* Jul */ 31, /* Aug */ 31, /* Sep */ 30, /* Oct */ 31, /* Nov */ 30, /* Dec */ 31
+    /* Jul */ 31, /* Aug */ 31, /* Sep */ 30, /* Oct */ 31, /* Nov */ 30, /* Dec */ 31,
 ]);
+/** Fast truncation of a number to an integer */
+const T = (i) => i | 0; // tslint:disable-line:no-bitwise
 /**
  * Internal helper method.
  * Given a year, month, and day triplet, return
@@ -52,12 +54,12 @@ function triplet_to_days_value(year, month, day) {
     assert(year >= 2000 && year <= 3000, "Year is invalid - must be between 2000 and 3000.");
     assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
     assert(day > 0 && day <= PDate.daysInMonth(year, month));
-    const nyear = (year - 2000 | 0);
-    let days_value = (nyear * 365) + ((nyear + 3) / 4 | 0) - ((nyear + 99) / 100 | 0) + ((nyear + 399) / 400 | 0);
+    const nyear = T(year - 2000);
+    let daysValue = (nyear * 365) + T((nyear + 3) / 4) - T((nyear + 99) / 100) + T((nyear + 399) / 400);
     // Compute the number of days between the first day of the year and the first day of the month:
-    days_value += PDate.isLeapYear(year) ? MONTH_SUMS_LEAP_YEAR[month] : MONTH_SUMS_NORMAL_YEAR[month];
-    days_value += day - 1;
-    return days_value;
+    daysValue += PDate.isLeapYear(year) ? MONTH_SUMS_LEAP_YEAR[month] : MONTH_SUMS_NORMAL_YEAR[month];
+    daysValue += day - 1;
+    return daysValue;
 }
 export default class PDate {
     /**
@@ -76,20 +78,22 @@ export default class PDate {
      * @returns {PDate}
      */
     static fromString(str) {
-        const year = parseInt(str.substr(0, 4));
+        const year = parseInt(str.substr(0, 4), 10);
         let month = NaN;
         let day = NaN;
         if (str.length === 10 && str.charAt(4) === '-' && str.charAt(7) === '-') {
             // YYYY-MM-DD format, presumably:
-            month = parseInt(str.substr(5, 2));
-            day = parseInt(str.substr(8, 2));
+            month = parseInt(str.substr(5, 2), 10);
+            day = parseInt(str.substr(8, 2), 10);
         }
-        else if (str.length === 8 && String(parseInt(str)) === str) {
-            month = parseInt(str.substr(4, 2));
-            day = parseInt(str.substr(6, 2));
+        else if (str.length === 8 && String(parseInt(str, 10)) === str) {
+            // YYYYMMDD format, presumably.
+            // (Note we check 'String(parseInt(str, 10)) === str' to avoid matching things like '05/05/05')
+            month = parseInt(str.substr(4, 2), 10);
+            day = parseInt(str.substr(6, 2), 10);
         }
         if (isNaN(year) || isNaN(month) || isNaN(day)) {
-            throw "Date string not in YYYY-MM-DD or YYYYMMDD format";
+            throw new Error("Date string not in YYYY-MM-DD or YYYYMMDD format");
         }
         return new PDate(triplet_to_days_value(year, month - 1, day));
     }
@@ -107,8 +111,8 @@ export default class PDate {
      * @returns {PDate}
      */
     static today() {
-        const js_date = new Date();
-        return new PDate(triplet_to_days_value(js_date.getFullYear(), js_date.getMonth(), js_date.getDate()));
+        const jsDate = new Date();
+        return new PDate(triplet_to_days_value(jsDate.getFullYear(), jsDate.getMonth(), jsDate.getDate()));
     }
     /**
      * Construct a PDate instance using its internal int representation (# of days since the millenium)
@@ -119,7 +123,7 @@ export default class PDate {
         assert(daysSinceMillenium <= 365615); // Corresponds to Dec. 31, 3000
         this.value = daysSinceMillenium;
         // Safer, but notably slower:
-        //Object.defineProperty(this, "value", {value: daysSinceMillenium, writable: false});
+        // Object.defineProperty(this, "value", {value: daysSinceMillenium, writable: false});
     }
     /**
      * Custom JSON serialization
@@ -137,8 +141,8 @@ export default class PDate {
      */
     get year() {
         // This formula is valid for any year 2000 or later
-        const centuries = this.value / 36525 | 0;
-        return (2000 + (this.value + centuries - (centuries / 4 | 0)) / 365.25) | 0;
+        const centuries = T(this.value / 36525);
+        return T(2000 + (this.value + centuries - T(centuries / 4)) / 365.25);
     }
     /**
      * Get the month (0-11)
@@ -147,12 +151,14 @@ export default class PDate {
     get month() {
         const nyear = this.year - 2000;
         // Compute the number of days between January 1, 2000 and the first day of the given year:
-        const d = (nyear * 365) + ((nyear + 3) / 4 | 0) - ((nyear + 99) / 100 | 0) + ((nyear + 399) / 400 | 0);
+        const d = (nyear * 365) + T((nyear + 3) / 4) - T((nyear + 99) / 100) + T((nyear + 399) / 400);
         const A = 'A'.charCodeAt(0);
-        if (PDate.isLeapYear(nyear))
+        if (PDate.isLeapYear(nyear)) {
             return LEAP_YEAR.charCodeAt(this.value - d) - A;
-        else
+        }
+        else {
             return NORMAL_YEAR.charCodeAt(this.value - d) - A;
+        }
     }
     /**
      * Get the day of the month (1-31)
@@ -170,7 +176,9 @@ export default class PDate {
      * @returns {string}
      */
     toString() {
-        const year = this.year, month = this.month + 1, day = this.day;
+        const year = this.year;
+        const month = this.month + 1;
+        const day = this.day;
         return year.toString() + (month < 10 ? "-0" : "-") + month + (day < 10 ? "-0" : "-") + day;
     }
     /**
@@ -200,7 +208,10 @@ export default class PDate {
      * @param {number} year - The year in question
      * @returns {boolean}
      */
-    static isLeapYear(year) { year = year | 0; return (year % 4 == 0) && (year % 100 != 0 || year % 400 == 0); }
+    static isLeapYear(year) {
+        year = T(year);
+        return (year % 4 === 0) && (year % 100 !== 0 || year % 400 === 0);
+    }
     // Constants
     static get DAYS() { return DAYS; }
     static get MONTHS() { return MONTHS; }

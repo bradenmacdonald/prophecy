@@ -2,8 +2,8 @@ import * as Immutable from 'immutable';
 import {Account} from './account';
 import {Category} from './category';
 import {default as PDate} from './pdate';
-import {__, assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
 import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
+import {__, assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
 
 export class TransactionDetail extends PRecord({ // TODO: change to plain Immutable.Record w/ Immutable v4
     amount: 0.0,
@@ -81,7 +81,7 @@ export class Transaction extends PRecord({
     }
 
     /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
+    protected _checkInvariants() {
         assertPositiveIntegerOrNull(this.id);
         assert(this.date === null || this.date instanceof PDate);
         assertPositiveIntegerOrNull(this.accountId);
@@ -101,7 +101,7 @@ export class Transaction extends PRecord({
         assert(Immutable.Map.isMap(this.metadata));
     }
 
-    _validate(context: ValidationContext) {
+    protected _validate(context: ValidationContext) {
         let account: Account|null = null;
         if (this.accountId !== null) {
             // An accountID is set - is it valid?
@@ -166,7 +166,7 @@ export class Transaction extends PRecord({
      * @param {Object} values - Values for the fields of this transaction
      * @returns {Object} - Cleaned values for the fields of this transaction
      */
-    static cleanArgs(values: TransactionValues) {
+    public static cleanArgs(values: TransactionValues) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if (typeof values.date === 'number') {
             values.date = new PDate(values.date);

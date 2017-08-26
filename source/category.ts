@@ -1,8 +1,8 @@
 import * as Immutable from 'immutable';
 import {Currency, SUPPORTED_CURRENCIES} from './currency';
 import {default as PDate} from './pdate';
-import {assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
 import {TypedRecordClass} from './precord'; // Todo: remove this import once we can upgrade to Immutable.js 4+
+import {assert, assertIsNumber, assertPositiveIntegerOrNull, MappableIterable, PRecord, ValidationContext} from './util';
 
 export enum CategoryRulePeriod {
     Day = 2,
@@ -43,10 +43,10 @@ export class CategoryRule extends PRecord({
         super(CategoryRule.cleanArgs(values || {}));
     }
     /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
+    protected _checkInvariants() {
         assertIsNumber(this.amount);
         assertIsNumber(this.repeatN);
-        assert((this.repeatN >>> 0) === this.repeatN, "repeatN must be a positive integer.");
+        assert((this.repeatN >>> 0) === this.repeatN, "repeatN must be a positive integer."); // tslint:disable-line:no-bitwise
         assert(this.startDate === null || this.startDate instanceof PDate);
         assert(this.endDate === null || this.endDate instanceof PDate);
         assert(this.period === null || allowedRuleValues.indexOf(this.period) !== -1, "period must be null or one of the allowed period constants.");
@@ -63,7 +63,7 @@ export class CategoryRule extends PRecord({
      * @param {PDate} dateEnd - End date of the period in question (inclusive)
      * @returns {number}
      */
-    countOccurrencesBetween(dateBegin: PDate, dateEnd: PDate) {
+    public countOccurrencesBetween(dateBegin: PDate, dateEnd: PDate) {
         assert(dateBegin instanceof PDate);
         assert(dateEnd instanceof PDate);
         assert(dateEnd >= dateBegin);
@@ -96,7 +96,10 @@ export class CategoryRule extends PRecord({
                          + (lastDay.day >= firstDay.day ? 1 : 0);
             result = Math.floor((months - 1) / this.repeatN) + 1; // Note that when repeatN = 1, this simplifies to 'result = months'
         } else if (this.period === CategoryRulePeriod.Year) {
-            result = (lastDay.year - firstDay.year) + (lastDay.month > firstDay.month || (lastDay.month == firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0);
+            result = (
+                (lastDay.year - firstDay.year) +
+                (lastDay.month > firstDay.month || (lastDay.month === firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0)
+            );
         } else {
             throw new Error("invalid period");
         }
@@ -120,7 +123,7 @@ export class CategoryRule extends PRecord({
      * @param {Object} values - Values for the fields of this CategoryRule
      * @returns {Object} - Cleaned values for the fields of this CategoryRule
      */
-    static cleanArgs(values: CategoryRuleValues) {
+    public static cleanArgs(values: CategoryRuleValues) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if (typeof values.startDate === 'number') {
             values.startDate = new PDate(values.startDate);
@@ -176,7 +179,7 @@ export class Category extends PRecord({
     }
 
     /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
+    protected _checkInvariants() {
         assertPositiveIntegerOrNull(this.id);
         assertPositiveIntegerOrNull(this.groupId);
         if (this.rules !== null) {
@@ -187,7 +190,7 @@ export class Category extends PRecord({
         assert(Immutable.Map.isMap(this.metadata));
     }
 
-    _validate(context: ValidationContext) {
+    protected _validate(context: ValidationContext) {
         // Group must be valid
         const groups = context.budget.categoryGroups;
         if (this.groupId === null || !groups.has(this.groupId)) {
@@ -227,7 +230,7 @@ export class Category extends PRecord({
      * @param {Object} values - Values for the fields of this category
      * @returns {Object} - Cleaned values for the fields of this category
      */
-    static cleanArgs(values: CategoryValues) {
+    public static cleanArgs(values: CategoryValues) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
         if (values.rules !== undefined && values.rules !== null) {
             // 'rules' can be any iterable with CategoryRule-typed values or

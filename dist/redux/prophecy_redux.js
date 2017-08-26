@@ -1,5 +1,5 @@
-import { assert, assertIsNumber } from '../util';
 import { Account, Budget, Category, CategoryGroup, PDate, Transaction } from '../prophecy';
+import { assert, assertIsNumber } from '../util';
 import * as ACTION from './actions';
 /**
  * The reducer for prophecy. Used to make the Prophecy engine work within a redux app.
@@ -23,7 +23,7 @@ export function reducer(state = new Budget(), action) {
         }
         case ACTION.SET_DATE: {
             const changes = {};
-            for (let dateKey of ['startDate', 'endDate']) {
+            for (const dateKey of ['startDate', 'endDate']) {
                 if (dateKey in action) {
                     changes[dateKey] = new PDate(action[dateKey]);
                 }
@@ -150,7 +150,7 @@ export function reducer(state = new Budget(), action) {
  */
 export function inverter(state, action) {
     // Inner function to generate the inverted action's parameters:
-    let result = (() => {
+    const result = (() => {
         switch (action.type) {
             case ACTION.NOOP: {
                 return {};
@@ -179,7 +179,9 @@ export function inverter(state, action) {
                     const data = acct.toJS();
                     delete data.id;
                     // Restore the associated transactions that will have their accountId set null:
-                    const linkNullTransactions = state.transactions.valueSeq().filter((t) => t.accountId == action.id).map((t) => t.id);
+                    const linkNullTransactions = (state.transactions.valueSeq()
+                        .filter((t) => t.accountId === action.id)
+                        .map((t) => t.id));
                     const index = state.accounts.keySeq().keyOf(action.id);
                     return { type: ACTION.UPDATE_ACCOUNT, id: action.id, data, linkNullTransactions, index };
                 }
@@ -194,7 +196,7 @@ export function inverter(state, action) {
                     const inverse = { id: action.id };
                     if ('data' in action) {
                         inverse.data = {};
-                        for (let key in action.data) {
+                        for (const key in action.data) {
                             const oldValue = acctJS[key];
                             if (oldValue !== action.data[key]) {
                                 inverse.data[key] = oldValue;
@@ -231,7 +233,7 @@ export function inverter(state, action) {
                             }
                         });
                     });
-                    const index = state.categories.filter((cat) => cat.groupId == category.groupId).keySeq().keyOf(action.id);
+                    const index = state.categories.filter((cat) => cat.groupId === category.groupId).keySeq().keyOf(action.id);
                     return { type: ACTION.UPDATE_CATEGORY, id: action.id, data, linkTransactionDetails, index };
                 }
                 return ACTION.NOOP;
@@ -245,7 +247,7 @@ export function inverter(state, action) {
                     const inverse = { id: action.id };
                     if ('data' in action) {
                         inverse.data = {};
-                        for (let key in action.data) {
+                        for (const key in action.data) {
                             const oldValue = categoryJS[key];
                             if (oldValue !== action.data[key]) {
                                 inverse.data[key] = oldValue;
@@ -254,7 +256,7 @@ export function inverter(state, action) {
                     }
                     if ('index' in action) {
                         // Was the index/position of this category within the group changed?
-                        const oldIndex = state.categories.filter((cat) => cat.groupId == category.groupId).keySeq().keyOf(action.id);
+                        const oldIndex = state.categories.filter((cat) => cat.groupId === category.groupId).keySeq().keyOf(action.id);
                         if (action.index !== oldIndex) {
                             inverse.index = oldIndex;
                         }
@@ -285,7 +287,7 @@ export function inverter(state, action) {
                     const inverse = { id: action.id };
                     if ('data' in action) {
                         inverse.data = {};
-                        for (let key in action.data) {
+                        for (const key in action.data) {
                             const oldValue = groupJS[key];
                             if (oldValue !== action.data[key]) {
                                 inverse.data[key] = oldValue;
@@ -322,8 +324,8 @@ export function inverter(state, action) {
                     // Generate the 'data' parameter required to undo this modification
                     // using another UPDATE_TRANSACTION action:
                     const txnJS = txn.toJS();
-                    let data = {};
-                    for (let key in action.data) {
+                    const data = {};
+                    for (const key in action.data) {
                         const oldValue = txnJS[key];
                         if (oldValue !== action.data[key]) {
                             data[key] = oldValue;
@@ -337,14 +339,15 @@ export function inverter(state, action) {
                 }
             }
             case ACTION.UPDATE_MULTIPLE_TRANSACTIONS: {
-                let inverseSubActions = [];
+                const inverseSubActions = [];
                 // Reverse iterate over action.subActions and invert each one:
                 let newState = state;
                 action.subActions.forEach((subAction) => {
                     const inverseSubAction = inverter(newState, subAction);
                     delete inverseSubAction.budgetId; // Delete this since it's redundant
                     inverseSubActions.push(inverseSubAction);
-                    newState = reducer(newState, subAction); // We need to update the state as we iterate the subActions in case any prior actions affect later ones.
+                    // We need to update the state as we iterate the subActions in case any prior actions affect later ones:
+                    newState = reducer(newState, subAction);
                 });
                 inverseSubActions.reverse(); // The inverse actions should be applied in the opposite order
                 return { subActions: inverseSubActions };

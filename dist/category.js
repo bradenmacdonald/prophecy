@@ -28,7 +28,7 @@ export class CategoryRule extends PRecord({
     _checkInvariants() {
         assertIsNumber(this.amount);
         assertIsNumber(this.repeatN);
-        assert((this.repeatN >>> 0) === this.repeatN, "repeatN must be a positive integer.");
+        assert((this.repeatN >>> 0) === this.repeatN, "repeatN must be a positive integer."); // tslint:disable-line:no-bitwise
         assert(this.startDate === null || this.startDate instanceof PDate);
         assert(this.endDate === null || this.endDate instanceof PDate);
         assert(this.period === null || allowedRuleValues.indexOf(this.period) !== -1, "period must be null or one of the allowed period constants.");
@@ -77,7 +77,8 @@ export class CategoryRule extends PRecord({
             result = Math.floor((months - 1) / this.repeatN) + 1; // Note that when repeatN = 1, this simplifies to 'result = months'
         }
         else if (this.period === CategoryRulePeriod.Year) {
-            result = (lastDay.year - firstDay.year) + (lastDay.month > firstDay.month || (lastDay.month == firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0);
+            result = ((lastDay.year - firstDay.year) +
+                (lastDay.month > firstDay.month || (lastDay.month === firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0));
         }
         else {
             throw new Error("invalid period");

@@ -1,7 +1,7 @@
 import * as Immutable from 'immutable';
 import { default as PDate } from './pdate';
-import { MappableIterable, ValidationContext } from './util';
 import { TypedRecordClass } from './precord';
+import { MappableIterable, ValidationContext } from './util';
 declare const TransactionDetail_base: TypedRecordClass<{
     amount: number;
     description: string;
@@ -45,8 +45,8 @@ export declare class Transaction extends Transaction_base {
     private _cachedAmount;
     constructor(values: TransactionValues);
     /** Assertions to help enforce correct usage. */
-    _checkInvariants(): void;
-    _validate(context: ValidationContext): void;
+    protected _checkInvariants(): void;
+    protected _validate(context: ValidationContext): void;
     /** Is this a split transaction? */
     readonly isSplit: boolean;
     /** Get the sum of the amounts of the 'detail' entries */
