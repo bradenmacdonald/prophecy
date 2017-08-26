@@ -1,4 +1,3 @@
-import { assert } from './util';
 /* tslint:disable:no-bitwise whitespace */
 const MONTHS = Object.freeze({
     JAN: 0,
@@ -50,9 +49,9 @@ const DAYS_PER_MONTH = Object.freeze([
  * @returns {number}
  */
 function triplet_to_days_value(year, month, day) {
-    assert(year >= 2000 && year <= 3000, "Year is invalid - must be between 2000 and 3000.");
-    assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
-    assert(day > 0 && day <= PDate.daysInMonth(year, month));
+    if (day <= 0 || day > PDate.daysInMonth(year, month)) {
+        throw new Error("Invalid date argument: day is out of range.");
+    }
     const nyear = (year - 2000 | 0);
     let daysValue = (nyear * 365) + ((nyear + 3) / 4 | 0) - ((nyear + 99) / 100 | 0) + ((nyear + 399) / 400 | 0);
     // Compute the number of days between the first day of the year and the first day of the month:
@@ -118,11 +117,10 @@ export default class PDate {
      * @param {Number} daysSinceMillenium - number representing the date
      */
     constructor(daysSinceMillenium) {
-        assert(daysSinceMillenium >= 0);
-        assert(daysSinceMillenium <= 365615); // Corresponds to Dec. 31, 3000
+        if (daysSinceMillenium < 0 || daysSinceMillenium > 365615) {
+            throw new Error("Date value out of range.");
+        }
         this.value = daysSinceMillenium;
-        // Safer, but notably slower:
-        // Object.defineProperty(this, "value", {value: daysSinceMillenium, writable: false});
     }
     /**
      * Custom JSON serialization
@@ -195,8 +193,10 @@ export default class PDate {
      * @returns {number}
      */
     static daysInMonth(year, month) {
-        assert(year >= 2000 && year <= 3000);
-        assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
+        if (!(year >= 2000 && year <= 3000) ||
+            !(month >= MONTHS.JAN && month <= MONTHS.DEC)) {
+            throw new Error("Invalid year or month value.");
+        }
         if (month === MONTHS.FEB) {
             return PDate.isLeapYear(year) ? 29 : 28;
         }
