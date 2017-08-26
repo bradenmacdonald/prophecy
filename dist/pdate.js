@@ -1,4 +1,5 @@
 import { assert } from './util';
+/* tslint:disable:no-bitwise whitespace */
 const MONTHS = Object.freeze({
     JAN: 0,
     FEB: 1,
@@ -38,8 +39,6 @@ const DAYS_PER_MONTH = Object.freeze([
     /* Jan */ 31, undefined, /* Mar */ 31, /* Apr */ 30, /* May */ 31, /* Jun */ 30,
     /* Jul */ 31, /* Aug */ 31, /* Sep */ 30, /* Oct */ 31, /* Nov */ 30, /* Dec */ 31,
 ]);
-/** Fast truncation of a number to an integer */
-const T = (i) => i | 0; // tslint:disable-line:no-bitwise
 /**
  * Internal helper method.
  * Given a year, month, and day triplet, return
@@ -54,8 +53,8 @@ function triplet_to_days_value(year, month, day) {
     assert(year >= 2000 && year <= 3000, "Year is invalid - must be between 2000 and 3000.");
     assert(month >= MONTHS.JAN && month <= MONTHS.DEC, "Month is invalid.");
     assert(day > 0 && day <= PDate.daysInMonth(year, month));
-    const nyear = T(year - 2000);
-    let daysValue = (nyear * 365) + T((nyear + 3) / 4) - T((nyear + 99) / 100) + T((nyear + 399) / 400);
+    const nyear = (year - 2000 | 0);
+    let daysValue = (nyear * 365) + ((nyear + 3) / 4 | 0) - ((nyear + 99) / 100 | 0) + ((nyear + 399) / 400 | 0);
     // Compute the number of days between the first day of the year and the first day of the month:
     daysValue += PDate.isLeapYear(year) ? MONTH_SUMS_LEAP_YEAR[month] : MONTH_SUMS_NORMAL_YEAR[month];
     daysValue += day - 1;
@@ -141,8 +140,8 @@ export default class PDate {
      */
     get year() {
         // This formula is valid for any year 2000 or later
-        const centuries = T(this.value / 36525);
-        return T(2000 + (this.value + centuries - T(centuries / 4)) / 365.25);
+        const centuries = this.value / 36525 | 0;
+        return (2000 + (this.value + centuries - (centuries / 4 | 0)) / 365.25) | 0;
     }
     /**
      * Get the month (0-11)
@@ -151,7 +150,7 @@ export default class PDate {
     get month() {
         const nyear = this.year - 2000;
         // Compute the number of days between January 1, 2000 and the first day of the given year:
-        const d = (nyear * 365) + T((nyear + 3) / 4) - T((nyear + 99) / 100) + T((nyear + 399) / 400);
+        const d = (nyear * 365) + ((nyear + 3) / 4 | 0) - ((nyear + 99) / 100 | 0) + ((nyear + 399) / 400 | 0);
         const A = 'A'.charCodeAt(0);
         if (PDate.isLeapYear(nyear)) {
             return LEAP_YEAR.charCodeAt(this.value - d) - A;
@@ -208,10 +207,7 @@ export default class PDate {
      * @param {number} year - The year in question
      * @returns {boolean}
      */
-    static isLeapYear(year) {
-        year = T(year);
-        return (year % 4 === 0) && (year % 100 !== 0 || year % 400 === 0);
-    }
+    static isLeapYear(year) { year = year | 0; return (year % 4 === 0) && (year % 100 !== 0 || year % 400 === 0); }
     // Constants
     static get DAYS() { return DAYS; }
     static get MONTHS() { return MONTHS; }
