@@ -1,17 +1,15 @@
-import {Currency, SUPPORTED_CURRENCIES} from './currency';
-import {default as PDate} from './pdate';
-import {assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord, Immutable} from './util';
-
-
-export const CategoryRulePeriod = Object.freeze({
-    Day: 2,
-    Week: 3,
-    Month: 4,
-    Year: 5,
-});
-
-const allowedRuleValues = Object.keys(CategoryRulePeriod).map(k => CategoryRulePeriod[k]); // = [2, 3, 4, 5]
-
+import * as Immutable from 'immutable';
+import { Currency, SUPPORTED_CURRENCIES } from './currency';
+import { default as PDate } from './pdate';
+import { assert, assertIsNumber, assertPositiveIntegerOrNull, PRecord } from './util';
+export var CategoryRulePeriod;
+(function (CategoryRulePeriod) {
+    CategoryRulePeriod[CategoryRulePeriod["Day"] = 2] = "Day";
+    CategoryRulePeriod[CategoryRulePeriod["Week"] = 3] = "Week";
+    CategoryRulePeriod[CategoryRulePeriod["Month"] = 4] = "Month";
+    CategoryRulePeriod[CategoryRulePeriod["Year"] = 5] = "Year";
+})(CategoryRulePeriod || (CategoryRulePeriod = {}));
+const allowedRuleValues = [CategoryRulePeriod.Day, CategoryRulePeriod.Week, CategoryRulePeriod.Month, CategoryRulePeriod.Year];
 export class CategoryRule extends PRecord({
     amount: 0.0,
     /** Start date for this rule, if any. */
@@ -22,23 +20,19 @@ export class CategoryRule extends PRecord({
     repeatN: 1,
     /** period: one of the CategoryRulePeriod values or null (for spending that happens on one day or randomly throughout the budget) */
     period: null,
-
-    // Possible future addition: round up to nearest business day, nearest Thursday, etc.
-
 }) {
     constructor(values) {
-        super(CategoryRule.cleanArgs(values));
+        super(CategoryRule.cleanArgs(values || {}));
     }
     /** Assertions to help enforce correct usage. */
     _checkInvariants() {
         assertIsNumber(this.amount);
         assertIsNumber(this.repeatN);
-        assert((this.repeatN>>>0) === this.repeatN, "repeatN must be a positive integer.");
+        assert((this.repeatN >>> 0) === this.repeatN, "repeatN must be a positive integer."); // tslint:disable-line:no-bitwise
         assert(this.startDate === null || this.startDate instanceof PDate);
         assert(this.endDate === null || this.endDate instanceof PDate);
-        assert(this.period === null || allowedRuleValues.includes(this.period), "period must be null or one of the allowed period constants.");
+        assert(this.period === null || allowedRuleValues.indexOf(this.period) !== -1, "period must be null or one of the allowed period constants.");
     }
-
     /**
      * countOccurrencesBetween: Based on this rule, determine how many times this amount is repeated
      * between dateBegin and DateEnd.
@@ -54,7 +48,6 @@ export class CategoryRule extends PRecord({
         assert(dateBegin instanceof PDate);
         assert(dateEnd instanceof PDate);
         assert(dateEnd >= dateBegin);
-
         // Short circuit checks:
         if (this.startDate && dateEnd < this.startDate) {
             return 0; // This rule doesn't start until after the date range in question has ended.
@@ -66,36 +59,37 @@ export class CategoryRule extends PRecord({
             // This is not a repeating rule. We only have to consider startDate and endDate, which we did just above.
             return 1;
         }
-
         // Step 1: Compute the # of occurrences between this.startDate (if set) and the earlier of [this.endDate, dateEnd]
-        const firstDay = this.startDate || dateBegin; 
+        const firstDay = this.startDate || dateBegin;
         const lastDay = (this.endDate && this.endDate < dateEnd) ? this.endDate : dateEnd;
-        const daysDiff = Math.max(0, lastDay - firstDay); // daysDiff should never be negative
-
+        const daysDiff = Math.max(0, (+lastDay) - (+firstDay)); // daysDiff should never be negative
         let result = null;
         if (this.period === CategoryRulePeriod.Day) {
             result = Math.floor(daysDiff / this.repeatN) + 1; // Never return a negative value
-        } else if (this.period === CategoryRulePeriod.Week) {
-            result = Math.floor(daysDiff/(this.repeatN * 7))+1;  // Note: we know repeatN > 0
-        } else if (this.period === CategoryRulePeriod.Month) {
-            const months = (lastDay.year - firstDay.year)*12
-                         + (lastDay.month - firstDay.month)
-                         + (lastDay.day >= firstDay.day ? 1 : 0);
-            result = Math.floor((months-1)/this.repeatN)+1; // Note that when repeatN = 1, this simplifies to 'result = months'
-        } else if (this.period === CategoryRulePeriod.Year) {
-            result = (lastDay.year - firstDay.year) + (lastDay.month > firstDay.month || (lastDay.month == firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0);
-        } else {
-            throw "invalid period";
         }
-
+        else if (this.period === CategoryRulePeriod.Week) {
+            result = Math.floor(daysDiff / (this.repeatN * 7)) + 1; // Note: we know repeatN > 0
+        }
+        else if (this.period === CategoryRulePeriod.Month) {
+            const months = (lastDay.year - firstDay.year) * 12
+                + (lastDay.month - firstDay.month)
+                + (lastDay.day >= firstDay.day ? 1 : 0);
+            result = Math.floor((months - 1) / this.repeatN) + 1; // Note that when repeatN = 1, this simplifies to 'result = months'
+        }
+        else if (this.period === CategoryRulePeriod.Year) {
+            result = ((lastDay.year - firstDay.year) +
+                (lastDay.month > firstDay.month || (lastDay.month === firstDay.month && lastDay.day >= firstDay.day) ? 1 : 0));
+        }
+        else {
+            throw new Error("invalid period");
+        }
         // Step 2: if dateBegin falls after this.startDate, subtract the number of occurrences
         // between this.startDate and the day before dateBegin:
         if (firstDay < dateBegin) {
-            result -= this.countOccurrencesBetween(firstDay, new PDate(dateBegin - 1));
+            result -= this.countOccurrencesBetween(firstDay, new PDate(+dateBegin - 1));
         }
         return result;
     }
-
     /**
      * Given a JS object which may be JSON-serializable, convert it to the proper
      * fully-typed, immutable representation required to initialize or modify
@@ -109,16 +103,15 @@ export class CategoryRule extends PRecord({
      */
     static cleanArgs(values) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
-        if ('startDate' in values && values.startDate !== null && !(values.startDate instanceof PDate)) {
+        if (typeof values.startDate === 'number') {
             values.startDate = new PDate(values.startDate);
         }
-        if ('endDate' in values && values.endDate !== null && !(values.endDate instanceof PDate)) {
+        if (typeof values.endDate === 'number') {
             values.endDate = new PDate(values.endDate);
         }
         return values;
     }
 }
-
 /**
  * Category: Represents a category of spending, such as "Rent", "Groceries", "Insurance", etc.
  */
@@ -146,30 +139,30 @@ export class Category extends PRecord({
     metadata: Immutable.Map(),
 }) {
     constructor(values) {
-        super(Category.cleanArgs(values));
+        super(Category.cleanArgs(values || {}));
     }
-
     /** Assertions to help enforce correct usage. */
     _checkInvariants() {
         assertPositiveIntegerOrNull(this.id);
         assertPositiveIntegerOrNull(this.groupId);
         if (this.rules !== null) {
-            assert(this.rules instanceof Immutable.List);
-            this.rules.forEach(rule => { assert(rule instanceof CategoryRule) });
+            assert(Immutable.List.isList(this.rules));
+            this.rules.forEach(rule => { assert(rule instanceof CategoryRule); });
         }
         assert(this.currency instanceof Currency); // Check that currencyCode is valid.
-        assert(this.metadata instanceof Immutable.Map);
+        assert(Immutable.Map.isMap(this.metadata));
     }
-
     _validate(context) {
         // Group must be valid
-        if (this.groupId === null || !context.budget.categoryGroups.has(this.groupId)) {
-            context.addError("Every Category must be assigned to a valid CategoryGroup.");
+        const groups = context.budget.categoryGroups;
+        if (this.groupId === null || !groups.has(this.groupId)) {
+            context.addError(null, "Every Category must be assigned to a valid CategoryGroup.");
         }
         // Ensure that no rules overlap:
         if (this.rules !== null) {
-            this.rules.forEach((rule, i) => {
-                this.rules.forEach((otherRule, j) => {
+            const rules = this.rules;
+            rules.forEach((rule, i) => {
+                rules.forEach((otherRule, j) => {
                     if (i !== j) {
                         const otherStartDate = otherRule.startDate || context.budget.startDate;
                         const otherEndDate = otherRule.endDate || context.budget.endDate;
@@ -181,13 +174,10 @@ export class Category extends PRecord({
             });
         }
     }
-
     /** Is this an "automatic" category (see 'rules' attribute)? */
     get isAutomatic() { return this.rules === null; }
-
     /** Get the currency of this category. */
     get currency() { return SUPPORTED_CURRENCIES[this.currencyCode]; }
-
     /**
      * Given a JS object which may be JSON-serializable, convert it to the proper
      * fully-typed, immutable representation required to initialize or modify
@@ -201,20 +191,17 @@ export class Category extends PRecord({
      */
     static cleanArgs(values) {
         values = Object.assign({}, values); // Don't modify the parameter; create a copy
-        if ('rules' in values && values.rules !== null) {
+        if (values.rules !== undefined && values.rules !== null) {
             // 'rules' can be any iterable with CategoryRule-typed values or
             // objects used to initialize CategoryRule
-            values.rules = new Immutable.List(values.rules.map(
-                d => d instanceof CategoryRule ? d : new CategoryRule(d)
-            ));
+            values.rules = Immutable.List(values.rules.map((r) => r instanceof CategoryRule ? r : new CategoryRule(r)));
         }
-        if ('metadata' in values && !(values.metadata instanceof Immutable.Map)) {
+        if ('metadata' in values && !Immutable.Map.isMap(values.metadata)) {
             values.metadata = Immutable.fromJS(values.metadata);
         }
         return values;
     }
 }
-
 /**
  * CategoryGroup: Represents an ordered group of categories.
  */
@@ -224,7 +211,5 @@ export class CategoryGroup extends PRecord({
     /** The name of this category group */
     name: "",
 }) {
-    /** Assertions to help enforce correct usage. */
-    _checkInvariants() {
-    }
 }
+//# sourceMappingURL=category.js.map

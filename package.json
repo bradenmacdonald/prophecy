@@ -2,44 +2,36 @@
   "name": "prophecy-engine",
   "homepage": "https://github.com/bradenmacdonald/prophecy",
   "repository": "bradenmacdonald/prophecy",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "A powerful budgeting toolkit",
   "author": "Braden MacDonald <braden@bradenmacdonald.com>",
-  "license" : "MIT",
+  "license": "MIT",
   "main": "prophecy-dist.js",
   "dependencies": {
     "immutable": "3.8.1"
   },
+  "module": "dist/prophecy.js",
+  "types": "prophecy-dist.d.ts",
   "devDependencies": {
-    "babel-core": "~6.17.0",
-    "babel-preset-babili": "~0.0.5",
-    "babel-preset-es2015": "~6.18.0",
-    "babelify": "7.2.0",
-    "browserify": "~13.1.1",
-    "browserify-derequire": "~0.9.4",
     "chai": "3.4.1",
-    "eslint": "~3.9.1",
+    "dts-generator": "^2.1.0",
     "exorcist": "0.4.0",
     "mocha": "2.3.4",
     "redux": "3.0.5",
-    "source-map-support": "~0.4.4"
+    "rollup": "^0.43.0",
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "rollup-plugin-uglify": "^2.0.1",
+    "source-map-support": "~0.4.4",
+    "tslint": "^5.4.3",
+    "typescript": "^2.4.1",
+    "uglify-es": "^3.0.20"
   },
   "scripts": {
-    "build": "browserify source/prophecy.js -t babelify -p browserify-derequire --noparse=immutable/dist/immutable.min.js --standalone Prophecy --debug | exorcist prophecy-dist.js.map > prophecy-dist.js",
-    "lint": "eslint source",
+    "build": "cp source/precord.* dist/ && tsc -p source && rollup -c && dts-generator --name prophecy-engine --project source/ --main prophecy-engine/prophecy --out prophecy-dist.d.ts",
+    "lint": "tslint -p source",
     "test": "mocha --colors --require source-map-support/register source/*_test.js source/*/*_test.js",
     "pretest": "npm run lint",
     "lint-build": "npm run lint && npm run build"
-  },
-  "babel": {
-    "plugins": [
-      "transform-es2015-modules-commonjs",
-      "transform-es2015-parameters"
-    ],
-    "presets": [
-      "babili"
-    ],
-    "minified": true,
-    "comments": false
   }
 }

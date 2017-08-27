@@ -1,20 +1,11 @@
-const prefix = 'PRPHCY_';
-export const PROPHECY_ACTION_PREFIX = prefix;
-
-////////////////////////////////////////////////////////////////////////////////
-// Miscellaneous actions
-
+export declare const PROPHECY_ACTION_PREFIX = "PRPHCY_";
 /**
  * NOOP:
  * Action that does nothing.
  *
  * This is generated as the inverse of an action that had no effect.
  */
-export const NOOP = prefix + 'NOOP';
-
-////////////////////////////////////////////////////////////////////////////////
-// Budget settings
-
+export declare const NOOP: string;
 /**
  * SET_CURRENCY:
  * Action to change the currency of this budget.
@@ -23,8 +14,7 @@ export const NOOP = prefix + 'NOOP';
  *  - currencyCode (string): New ISO 4217 currency code (e.g. 'USD')
  *  - budgetId (string): ID of the budget (optional)
  */
-export const SET_CURRENCY = prefix + 'SET_CURRENCY';
-
+export declare const SET_CURRENCY: string;
 /**
  * SET_DATE:
  * Action to change the start and/or end date of this budget.
@@ -34,8 +24,7 @@ export const SET_CURRENCY = prefix + 'SET_CURRENCY';
  *  - endDate (int): PDate value for the end date, cast to integer (optional)
  *  - budgetId (string): ID of the budget (optional)
  */
-export const SET_DATE = prefix + 'SET_DATE';
-
+export declare const SET_DATE: string;
 /**
  * SET_NAME:
  * Action to change the name of this budget.
@@ -44,11 +33,7 @@ export const SET_DATE = prefix + 'SET_DATE';
  *  - name (string): New name of the budget
  *  - budgetId (string): ID of the budget (optional)
  */
-export const SET_NAME = prefix + 'SET_NAME';
-
-////////////////////////////////////////////////////////////////////////////////
-// Accounts
-
+export declare const SET_NAME: string;
 /**
  * DELETE_ACCOUNT:
  * Action to delete an account. Will set the 'accountId' of any linked transactions to null.
@@ -57,8 +42,7 @@ export const SET_NAME = prefix + 'SET_NAME';
  *  - id (int): The ID of the account to delete
  *  - budgetId (string): ID of the budget (optional)
  */
-export const DELETE_ACCOUNT = prefix + 'DELETE_ACCT';
-
+export declare const DELETE_ACCOUNT: string;
 /**
  * UPDATE_ACCOUNT:
  * Action to create/modify an account
@@ -73,11 +57,7 @@ export const DELETE_ACCOUNT = prefix + 'DELETE_ACCT';
  *    this is an account insertion (not update). This parameter mostly exists so
  *    that DELETE_ACCOUNT can be inverted to a single action. (optional)
  */
-export const UPDATE_ACCOUNT = prefix + 'UPDATE_ACCT';
-
-////////////////////////////////////////////////////////////////////////////////
-// Categories
-
+export declare const UPDATE_ACCOUNT: string;
 /**
  * DELETE_CATEGORY:
  * Action to delete a category.
@@ -86,8 +66,7 @@ export const UPDATE_ACCOUNT = prefix + 'UPDATE_ACCT';
  *  - id (int): The ID of the category to delete
  *  - budgetId (string): ID of the budget (optional)
  */
-export const DELETE_CATEGORY = prefix + 'DELETE_CAT';
-
+export declare const DELETE_CATEGORY: string;
 /**
  * UPDATE_CATEGORY:
  * Action to create/modify a category
@@ -103,11 +82,7 @@ export const DELETE_CATEGORY = prefix + 'DELETE_CAT';
  *    this is an category insertion (not update). This parameter mostly exists so
  *    that DELETE_CATEGORY can be inverted to a single action. (optional)
  */
-export const UPDATE_CATEGORY = prefix + 'UPDATE_CAT';
-
-////////////////////////////////////////////////////////////////////////////////
-// Category Groups
-
+export declare const UPDATE_CATEGORY: string;
 /**
  * DELETE_CATEGORY_GROUP:
  * Action to delete a category group. It must not contain any categories.
@@ -116,8 +91,7 @@ export const UPDATE_CATEGORY = prefix + 'UPDATE_CAT';
  *  - id (int): The ID of the category group to delete
  *  - budgetId (string): ID of the budget (optional)
  */
-export const DELETE_CATEGORY_GROUP = prefix + 'DELETE_CG';
-
+export declare const DELETE_CATEGORY_GROUP: string;
 /**
  * UPDATE_CATEGORY_GROUP:
  * Action to create/modify a category group
@@ -128,12 +102,7 @@ export const DELETE_CATEGORY_GROUP = prefix + 'DELETE_CG';
  *  - budgetId (string): ID of the budget (optional)
  *  - index (int): Index/position of the category group in the list (optional)
  */
-export const UPDATE_CATEGORY_GROUP = prefix + 'UPDATE_CG';
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Transactions
-
+export declare const UPDATE_CATEGORY_GROUP: string;
 /**
  * DELETE_TRANSACTION:
  * Action to delete a transaction
@@ -142,8 +111,7 @@ export const UPDATE_CATEGORY_GROUP = prefix + 'UPDATE_CG';
  *  - id (int): The ID of the transaction to delete
  *  - budgetId (string): ID of the budget (optional)
  */
-export const DELETE_TRANSACTION = prefix + 'DELETE_TXN';
-
+export declare const DELETE_TRANSACTION: string;
 /**
  * UPDATE_TRANSACTION:
  * Action to create/modify a transaction
@@ -153,12 +121,11 @@ export const DELETE_TRANSACTION = prefix + 'DELETE_TXN';
  *  - data (object): fields to set on the new/modifed transactions
  *  - budgetId (string): ID of the budget (optional)
  */
-export const UPDATE_TRANSACTION = prefix + 'UPDATE_TXN';
-
+export declare const UPDATE_TRANSACTION: string;
 /**
  * UPDATE_MULTIPLE_TRANSACTIONS
  * Action to atomically update multiple transactions.
- * 
+ *
  * This is the only "compound action" that itself contains
  * multiple other actions. "Compound actions" are kept to a minimum
  * in order to make it easier for other reducers to watch for
@@ -171,5 +138,5 @@ export const UPDATE_TRANSACTION = prefix + 'UPDATE_TXN';
  *  - subActions (array): array of UPDATE_TRANSACTION and DELETE_TRANSACTION
  *       actions to carry out as part of this action.
  *  - budgetId (string): ID of the budget (optional)
- **/
-export const UPDATE_MULTIPLE_TRANSACTIONS = prefix + 'UPDATE_MANY_TXN';
+ */
+export declare const UPDATE_MULTIPLE_TRANSACTIONS: string;

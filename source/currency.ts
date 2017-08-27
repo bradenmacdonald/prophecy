@@ -6,6 +6,14 @@ const _CODE = Symbol("code"); // Internal key used to make 'code' read-only
 /** Class that describes a real-world currency. */
 export class Currency {
     /**
+     * Get the ISO 4217 currency code (uniquely identifies this currency)
+     * @return {string} The ISO 4217 currency code.
+     */
+    public readonly code: string;
+    public readonly name: string;
+    public readonly symbols: string[];
+    public readonly decimals: number;
+    /**
      * Create a currency description.
      * @param {string} code - the ISO 4217 currency code (three characters)
      * @param {string} name - the full name of the currency ("Canadian Dollar")
@@ -14,17 +22,12 @@ export class Currency {
      * @param {number} decimals - The maximum number of decimal places that this currency can
      *                            support (e.g. '2' means $0.01 is the smallest amount.)
      */
-    constructor(code, name, symbols, decimals = 2) {
-        this[_CODE] = code;
+    constructor(code: string, name: string, symbols: string[], decimals = 2) {
+        this.code = code;
         this.name = name;
         this.symbols = symbols;
         this.decimals = decimals;
     }
-    /**
-     * Get the ISO 4217 currency code (uniquely identifies this currency)
-     * @return {string} The ISO 4217 currency code.
-     */
-    get code() { return this[_CODE]; }
 
     /**
      * Round a given amount of this currency to the minimum supported value.
@@ -37,18 +40,18 @@ export class Currency {
      * @param {number} amount - The amount/value to round.
      * @returns {number} The rounded amount/value.
      */
-    roundAmount(amount) { return Math.round(amount); }
+    public roundAmount(amount: number) { return Math.round(amount); }
 
     /**
      * Custom JSON serialization
      * @returns {string} - This currency's currency code.
      */
-    toJSON() { return this.code; }
+    public toJSON() { return this.code; }
 }
 
 
 /** Global constant map listing supported currencies. */
-export const SUPPORTED_CURRENCIES = Object.freeze({
+export const SUPPORTED_CURRENCIES: Readonly<{[currencyCode: string]: Currency}> = Object.freeze({
     CAD: new Currency("CAD", __("Canadian dollar"), ["$", "C$"]),
     EUR: new Currency("EUR", __("Euro"), ["€"]),
     USD: new Currency("USD", __("United States dollar"), ["$", "US$"]),
@@ -57,8 +60,18 @@ export const SUPPORTED_CURRENCIES = Object.freeze({
 });
 
 
+class CustomNumberFormat extends Intl.NumberFormat {
+    // Store the currency symbol in the formatter as a custom property
+    public symbol: string;
+}
+
+
 export class CurrencyFormatter {
-    constructor(defaultCurrency, locales = undefined) {
+    public readonly defaultCurrency: Currency;
+    public readonly locales: string|string[];
+    private rawFormatters: {[currencyCode: string]: Intl.NumberFormat};
+    private formatters: {[currencyCode: string]: CustomNumberFormat};
+    constructor(defaultCurrency: Currency, locales?: string|string[]) {
         this.defaultCurrency = defaultCurrency;
         this.locales = locales || 'en'; // Define a default locale for consistency
         // Cached NumberFormat instances, keyed by currency code:
@@ -75,14 +88,14 @@ export class CurrencyFormatter {
      * @param {Currency=} currency - one of the currencies from SUPPORTED_CURRENCIES (optional)
      * @return {string} The amount, formatted as a string.
      */
-    formatAmount(amount, currency = undefined) {
+    public formatAmount(amount: number, currency?: Currency) {
         assertIsNumber(amount);
         if (currency === undefined) {
             currency = this.defaultCurrency;
         }
         let formatter = this.formatters[currency.code];
         if (formatter === undefined) {
-            formatter = this.formatters[currency.code] = new Intl.NumberFormat(this.locales, {
+            formatter = this.formatters[currency.code] = new CustomNumberFormat(this.locales, {
                 style: "currency",
                 // The currency argument is supposed to be the ISO 4217 currency code, but
                 // according to the spec (http://www.ecma-international.org/ecma-402/1.0/#sec-6.3)
@@ -97,11 +110,11 @@ export class CurrencyFormatter {
             });
             let symbol = currency.symbols[0];
             const isDefaultCurrency = (currency.code === this.defaultCurrency.code);
-            const symbolConflicts = (!isDefaultCurrency && symbol == this.defaultCurrency.symbols[0]);
+            const symbolConflicts = (!isDefaultCurrency && symbol === this.defaultCurrency.symbols[0]);
             if (symbolConflicts && currency.symbols.length > 1) {
                 symbol = currency.symbols[1];
             }
-            formatter.symbol = symbol;  // Store the symbol in the formatter as a custom property
+            formatter.symbol = symbol;
         }
         return formatter.format(amount * Math.pow(10, -currency.decimals)).replace("XCC", formatter.symbol);
     }
@@ -112,7 +125,7 @@ export class CurrencyFormatter {
      * @param {Currency=} currency - one of the currencies from SUPPORTED_CURRENCIES (optional)
      * @return {string} The amount, formatted as a string, but without any currency symbol.
      */
-    formatAmountRaw(amount, currency = undefined) {
+    public formatAmountRaw(amount: number, currency?: Currency) {
         assertIsNumber(amount);
         if (currency === undefined) {
             currency = this.defaultCurrency;

@@ -1,9 +1,9 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../prophecy-dist');
 const Transaction = Prophecy.Transaction;
 const TransactionDetail = Prophecy.TransactionDetail;
-const Immutable = Prophecy.Immutable;
 
 describe('Transaction', function() {
 

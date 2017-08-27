@@ -1,11 +1,11 @@
 "use strict";
 const should = require('chai').should();
+const Immutable = require('immutable');
 const Prophecy = require('../prophecy-dist');
 const Category = Prophecy.Category;
 const CategoryRule = Prophecy.CategoryRule;
 const CategoryGroup = Prophecy.CategoryGroup;
 const CategoryRulePeriod = Prophecy.CategoryRulePeriod;
-const Immutable = Prophecy.Immutable;
 const PDate = Prophecy.PDate;
 
 
@@ -21,11 +21,24 @@ const dec31 = D`2016-12-31`;
 
 describe('CategoryRule', function() {
 
+    describe('initialization', () => {
+        it('can be constructed with no arguments', () => {
+            const rule = new CategoryRule();
+            rule.amount.should.equal(0);
+            rule.repeatN.should.equal(1);
+        });
+        it('can be constructed with some arguments', () => {
+            const rule = new CategoryRule({amount: 15});
+            rule.amount.should.equal(15);
+            rule.repeatN.should.equal(1);
+        });
+    });
+
     describe('countOccurrencesBetween', () => {
 
         // Simple tests that can apply to all repetition periods:
 
-        for (let periodName of Object.keys(CategoryRulePeriod)) {
+        for (let periodName of ['Day', 'Week', 'Month', 'Year']) {
             const period = CategoryRulePeriod[periodName];
             it('returns 1 occurence for a "1 ' + periodName + '" repetition between Jan 1, 2016 and Jan 1, 2016 when startDate and endDate are null.', () => {
                 const rule = new CategoryRule({startDate: null, endDate: null, repeatN: 1, period});
@@ -176,6 +189,19 @@ describe('CategoryRule', function() {
 
 
 describe('Category', function() {
+    
+    describe('initialization', () => {
+        it('can be constructed with no arguments', () => {
+            const cat = new Category();
+            cat.name.should.equal("");
+            should.equal(cat.groupId, null);
+        });
+        it('can be constructed with some arguments', () => {
+            const cat = new Category({name: "test"});
+            cat.name.should.equal("test");
+            should.equal(cat.groupId, null);
+        });
+    });
 
     describe('immutability', () => {
 
@@ -276,7 +302,7 @@ describe('Category', function() {
         it('serializes to JSON and back', () => {
             const categoryJSON = JSON.stringify(category1);
             const category2 = Category.fromJS(JSON.parse(categoryJSON));
-            category2.should.deep.equal(category1);
+            Immutable.is(category1, category2).should.be.true;
             // Make sure this comparison works:
             const otherData = JSON.parse(categoryJSON);
             otherData.id = 456;

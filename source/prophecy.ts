@@ -3,14 +3,17 @@
  *
  * All of these classes should be namespaced within a 'Prophecy' global.
  */
-export {PRecord, Immutable} from './util';
+import * as Imm from 'immutable';
+export const Immutable = Imm;
+export type Immutable = typeof Imm;
+export {PRecord} from './precord';
 
-export {Account} from './account';
-export {Budget} from './budget';
-export {Category, CategoryGroup, CategoryRule, CategoryRulePeriod} from './category';
+export {Account, AccountValues} from './account';
+export {Budget, BudgetValues, BalanceMap} from './budget';
+export {Category, CategoryValues, CategoryGroup, CategoryRule, CategoryRulePeriod, CategoryRuleValues} from './category';
 export {Currency, CurrencyFormatter, SUPPORTED_CURRENCIES} from './currency';
 export {default as PDate} from './pdate';
-export {Transaction, TransactionDetail} from './transaction';
+export {Transaction, TransactionDetail, TransactionValues} from './transaction';
 
 export {reducer, inverter} from './redux/prophecy_redux';
 import * as _actions from './redux/actions';
