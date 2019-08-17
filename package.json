@@ -2,7 +2,7 @@
   "name": "prophecy-engine",
   "homepage": "https://github.com/bradenmacdonald/prophecy",
   "repository": "bradenmacdonald/prophecy",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "A powerful budgeting toolkit",
   "author": "Braden MacDonald <braden@bradenmacdonald.com>",
   "license": "MIT",

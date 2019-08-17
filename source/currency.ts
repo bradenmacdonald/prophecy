@@ -55,6 +55,7 @@ export const SUPPORTED_CURRENCIES: Readonly<{[currencyCode: string]: Currency}> 
     CAD: new Currency("CAD", __("Canadian dollar"), ["$", "C$"]),
     EUR: new Currency("EUR", __("Euro"), ["€"]),
     USD: new Currency("USD", __("United States dollar"), ["$", "US$"]),
+    HKD: new Currency("HKD", __("Hong Kong dollar"), ["$", "HK$"]),
     JPY: new Currency("JPY", __("Japanese yen"), ["¥"], 0),
     XBT: new Currency("XBT", __("Bitcoin"), ["\u20BF"], 8),
 });
