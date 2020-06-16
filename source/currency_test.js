@@ -80,17 +80,17 @@ describe('CurrencyFormatter', function() {
     describe('.formatAmount()', () => {
 
         const formatAmount_data = [
-            {code: "CAD", userDefault: "CAD", locale: undefined, amount: 100, formatted: "$1.00"},
-            {code: "USD", userDefault: "CAD", locale: undefined, amount: 100, formatted: "US$1.00"},
-            {code: "CAD", userDefault: "USD", locale: undefined, amount: 100, formatted: "C$1.00"},
-            {code: "XBT", userDefault: "CAD", locale: undefined, amount: 100000000, formatted: "\u20BF1.00"},
-            {code: "XBT", userDefault: "CAD", locale: undefined, amount: 100000001, formatted: "\u20BF1.00000001"},
+            {code: "CAD", userDefault: "CAD", locale: undefined, amount: 100, formatted: "$\xa01.00"},
+            {code: "USD", userDefault: "CAD", locale: undefined, amount: 100, formatted: "US$\xa01.00"},
+            {code: "CAD", userDefault: "USD", locale: undefined, amount: 100, formatted: "C$\xa01.00"},
+            {code: "XBT", userDefault: "CAD", locale: undefined, amount: 100000000, formatted: "\u20BF\xa01.00"},
+            {code: "XBT", userDefault: "CAD", locale: undefined, amount: 100000001, formatted: "\u20BF\xa01.00000001"},
 
-            {code: "CAD", userDefault: "CAD", locale: "en", amount: 0, formatted: "$0.00"},
-            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.5, formatted: "$10.01"},
-            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.4, formatted: "$10.00"},
-            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.009, formatted: "$10.00"},
-            {code: "CAD", userDefault: "CAD", locale: "en", amount: -123456.1, formatted: "-$1,234.56"},
+            {code: "CAD", userDefault: "CAD", locale: "en", amount: 0, formatted: "$\xa00.00"},
+            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.5, formatted: "$\xa010.01"},
+            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.4, formatted: "$\xa010.00"},
+            {code: "CAD", userDefault: "CAD", locale: "en", amount: 1000.009, formatted: "$\xa010.00"},
+            {code: "CAD", userDefault: "CAD", locale: "en", amount: -123456.1, formatted: "-$\xa01,234.56"},
 
             // Note: if the following tests fail in Node, it probably is missing ICU data.
             // Reinstall node with "./configure --with-intl=full-icu" or
