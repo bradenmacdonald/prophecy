@@ -2,7 +2,7 @@
   "name": "prophecy-engine",
   "homepage": "https://github.com/bradenmacdonald/prophecy",
   "repository": "bradenmacdonald/prophecy",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A powerful budgeting toolkit",
   "author": "Braden MacDonald <braden@bradenmacdonald.com>",
   "license": "MIT",
@@ -22,9 +22,9 @@
     "rollup-plugin-node-resolve": "^3.0.0",
     "rollup-plugin-uglify": "^2.0.1",
     "source-map-support": "~0.4.4",
-    "tslint": "^5.4.3",
-    "typescript": "^2.4.1",
-    "uglify-es": "^3.0.20"
+    "tslint": "6.1.2",
+    "typescript": "3.9.5",
+    "uglify-es": "3.3.9"
   },
   "scripts": {
     "build": "cp source/precord.* dist/ && tsc -p source && rollup -c && dts-generator --name prophecy-engine --project source/ --main prophecy-engine/prophecy --out prophecy-dist.d.ts",

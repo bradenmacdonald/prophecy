@@ -267,7 +267,7 @@ export function inverter(state: Budget, action: ActionType) {
                 delete data.id;
                 // Restore the associated transaction details that will have their categoryId set null.
                 // We do this by including a list with tuples of (transaction ID, detail index).
-                const linkTransactionDetails: Array<[number, number]> = [];
+                const linkTransactionDetails: [number, number][] = [];
                 state.transactions.forEach((txn: Transaction) => {
                     txn.detail.forEach((detail: TransactionDetail, idx: number) => {
                         if (detail.categoryId === category.id) {

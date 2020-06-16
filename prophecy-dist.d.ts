@@ -47,21 +47,21 @@ declare module 'prophecy-engine/pdate' {
 	     * Get the year (2000-3000)
 	     * @returns {number}
 	     */
-	    readonly year: number;
+	    get year(): number;
 	    /**
 	     * Get the month (0-11)
 	     * @returns {number}
 	     */
-	    readonly month: number;
+	    get month(): number;
 	    /**
 	     * Get the day of the month (1-31)
 	     * @returns {number}
 	     */
-	    readonly day: number;
+	    get day(): number;
 	    /** Get the day of the week (0 = Sunday, 6 = Saturday) */
-	    readonly dayOfWeek: number;
+	    get dayOfWeek(): number;
 	    /** Get the day of the year (0-365) */
-	    readonly dayOfYear: number;
+	    get dayOfYear(): number;
 	    /**
 	     * Get the date as an ISO 8601 string ("2015-01-25")
 	     * @returns {string}
@@ -88,7 +88,7 @@ declare module 'prophecy-engine/pdate' {
 	     * @returns {boolean}
 	     */
 	    static isLeapYear(year: number): boolean;
-	    static readonly DAYS: Readonly<{
+	    static get DAYS(): Readonly<{
 	        SUN: number;
 	        MON: number;
 	        TUE: number;
@@ -97,7 +97,7 @@ declare module 'prophecy-engine/pdate' {
 	        FRI: number;
 	        SAT: number;
 	    }>;
-	    static readonly MONTHS: Readonly<{
+	    static get MONTHS(): Readonly<{
 	        JAN: number;
 	        FEB: number;
 	        MAR: number;
@@ -135,7 +135,7 @@ declare module 'prophecy-engine/precord' {
 
 	    // Reading values
 
-	    has(key: string): key is keyof T;
+	    has(key: string|number|symbol): key is keyof T;
 	    get<K extends keyof T>(key: K): T[K];
 
 	    // Reading deep values
@@ -266,7 +266,7 @@ declare module 'prophecy-engine/category' {
 	    Day = 2,
 	    Week = 3,
 	    Month = 4,
-	    Year = 5,
+	    Year = 5
 	}
 	export interface CategoryRuleValues {
 	    amount?: number;
@@ -280,9 +280,13 @@ declare module 'prophecy-engine/category' {
 	    endDate?: PDate | null;
 	} const CategoryRule_base: TypedRecordClass<{
 	    amount: number;
+	    /** Start date for this rule, if any. */
 	    startDate: PDate | null;
+	    /** End date for this rule, if any. Must be after startDate but need not be within the budget period. */
 	    endDate: PDate | null;
+	    /** repeatN: If this rule is "Repeat every 6 weeks", this will be 6. If period is null, this value is meaningless. */
 	    repeatN: number;
+	    /** period: one of the CategoryRulePeriod values or null (for spending that happens on one day or randomly throughout the budget) */
 	    period: CategoryRulePeriod | null;
 	}>;
 	export class CategoryRule extends CategoryRule_base {
@@ -328,10 +332,24 @@ declare module 'prophecy-engine/category' {
 	} const Category_base: TypedRecordClass<{
 	    id: number | null;
 	    name: string;
+	    /**
+	     * Rules: a set of Rule objects defining expected spending in this category such as "$10 per day"
+	     *
+	     * If rules === null, this is an "Automatic" category, which means that the total amount expected
+	     * to be spent over the budget period should be computed from existing + pending transactions
+	     * in this category
+	     *
+	     * If rules is a List (even an empty list), then it the total amount to be spent during the budget
+	     * is to be calculated based on the rules. (Or is $0 if the rules list is empty)
+	     */
 	    rules: Immutable.List<CategoryRule> | null;
+	    /** Notes - custom text editable by the user */
 	    notes: string;
+	    /** the ISO 4217 currency code */
 	    currencyCode: string;
+	    /** Which CategoryGroup this category belongs to. */
 	    groupId: number | null;
+	    /** Metadata - meaning depends on the user/application */
 	    metadata: Immutable.Map<string, any>;
 	}>;
 	/**
@@ -343,9 +361,9 @@ declare module 'prophecy-engine/category' {
 	    protected _checkInvariants(): void;
 	    protected _validate(context: ValidationContext): void;
 	    /** Is this an "automatic" category (see 'rules' attribute)? */
-	    readonly isAutomatic: boolean;
+	    get isAutomatic(): boolean;
 	    /** Get the currency of this category. */
-	    readonly currency: Currency;
+	    get currency(): Currency;
 	    /**
 	     * Given a JS object which may be JSON-serializable, convert it to the proper
 	     * fully-typed, immutable representation required to initialize or modify
@@ -359,7 +377,9 @@ declare module 'prophecy-engine/category' {
 	     */
 	    static cleanArgs(values: CategoryValues): CleanCategoryValues;
 	} const CategoryGroup_base: TypedRecordClass<{
+	    /** Unique integer ID of this category group */
 	    id: number | null;
+	    /** The name of this category group */
 	    name: string;
 	}>;
 	/**
@@ -367,6 +387,7 @@ declare module 'prophecy-engine/category' {
 	 */
 	export class CategoryGroup extends CategoryGroup_base {
 	}
+	export {};
 
 }
 declare module 'prophecy-engine/transaction' {
@@ -398,9 +419,38 @@ declare module 'prophecy-engine/transaction' {
 	    date: PDate | null;
 	    accountId: number | null;
 	    who: string;
+	    /**
+	     * detail: The amount, description, and category of this transaction.
+	     * Usually a single-item list except for split transactions.
+	     */
 	    detail: Immutable.List<TransactionDetail>;
 	    userId: null;
+	    /**
+	     * pending transactions affect the budget if their date is today or past.
+	     * If their day is in the future, they don't.
+	     * pending transactions never affect the account balances.
+	     */
 	    pending: boolean;
+	    /**
+	     * isTransfer:
+	     * Transfers between accounts (especially of different currencies) require special treatment.
+	     *
+	     * A typical transfer from e.g. "Chequing to Savings" would be represented as two transactions:
+	     * One transaction with a negative amount and its accountId set to the chequing account, and
+	     * one transaction with a positive amount and its accountId set to the savings account.
+	     *
+	     * This approach allows Prophecy to model complex transfers, e.g. where the money arrives
+	     * in the destination account on a different day than it was sent from the first account
+	     * (very common with e.g. credit card payments), or where the two accounts have different
+	     * currencies.
+	     *
+	     * Transfer transactions must not have a budget category assigned, because they are not an expense
+	     * nor income.
+	     *
+	     * In a single-currency budget, the sum of all transfer transactions should be zero.
+	     * In a multi-currency budget, the sum of all transfer transactions may not be zero,
+	     * even when converted to the same currency, because of losses due to currency conversion.
+	     */
 	    isTransfer: boolean;
 	    metadata: Immutable.Map<string, any>;
 	}>;
@@ -418,9 +468,9 @@ declare module 'prophecy-engine/transaction' {
 	    protected _checkInvariants(): void;
 	    protected _validate(context: ValidationContext): void;
 	    /** Is this a split transaction? */
-	    readonly isSplit: boolean;
+	    get isSplit(): boolean;
 	    /** Get the sum of the amounts of the 'detail' entries */
-	    readonly amount: number;
+	    get amount(): number;
 	    /**
 	     * Given a JS object which may be JSON-serializable, convert it to the proper
 	     * fully-typed, immutable representation required to initialize or modify
@@ -434,6 +484,7 @@ declare module 'prophecy-engine/transaction' {
 	     */
 	    static cleanArgs(values: TransactionValues): CleanTransactionValues;
 	}
+	export {};
 
 }
 declare module 'prophecy-engine/budget' {
@@ -445,15 +496,15 @@ declare module 'prophecy-engine/budget' {
 	import { TypedRecordClass } from 'prophecy-engine/precord';
 	import { Transaction } from 'prophecy-engine/transaction';
 	export const majorVersion = 0;
-	export const minorVersion = 2;
+	export const minorVersion = 3;
 	export type AccountMap = Immutable.OrderedMap<number, Account>;
-	export const AccountMap: <T>(...args: T[]) => Immutable.OrderedMap<number, Account>;
+	export const AccountMap: (arg?: any) => Immutable.OrderedMap<number, Account>;
 	export type CategoryMap = Immutable.OrderedMap<number, Category>;
-	export const CategoryMap: <T>(...args: T[]) => Immutable.OrderedMap<number, Category>;
+	export const CategoryMap: (arg?: any) => Immutable.OrderedMap<number, Category>;
 	export type CategoryGroupMap = Immutable.OrderedMap<number, CategoryGroup>;
-	export const CategoryGroupMap: <T>(...args: T[]) => Immutable.OrderedMap<number, CategoryGroup>;
+	export const CategoryGroupMap: (arg?: any) => Immutable.OrderedMap<number, CategoryGroup>;
 	export type TransactionMap = Immutable.OrderedMap<number, Transaction>;
-	export const TransactionMap: <T>(...args: T[]) => Immutable.OrderedMap<number, Transaction>;
+	export const TransactionMap: (arg?: any) => Immutable.OrderedMap<number, Transaction>;
 	export interface BudgetJSON {
 	    id: number | null;
 	    name: string;
@@ -484,12 +535,25 @@ declare module 'prophecy-engine/budget' {
 	export type BalanceMap = Immutable.Map<number, number>; const Budget_base: TypedRecordClass<{
 	    id: number | null;
 	    name: string;
+	    /** Start date of the budget. Always of type PDate, and always less than or equal to end date. */
 	    startDate: PDate;
+	    /** End date of the budget. Always of type PDate, and always greater than or equal to start date. */
 	    endDate: PDate;
+	    /**
+	     * ISO 4217 currency code for the budget. Individual accounts may use different currencies.
+	     * This setting does not directly have any effect as far as Prophecy is concerned, but it
+	     * is useful to apps working with the budget.
+	     *
+	     * It's best to read this value as a Currency object using the 'currency' getter.
+	     */
 	    currencyCode: string;
+	    /** Ordered map of Accounts, in a custom order specified by the user. See accounts() getter. */
 	    '^a': Immutable.OrderedMap<number, Account>;
+	    /** Map of Categories, keyed by ID, ordered by category group order, and in a custom order within each group. See categories() getter. */
 	    '^c': Immutable.OrderedMap<number, Category>;
+	    /** Ordered map of CategoryGroups, in a custom order specified by the user. See categoryGroups() getter. */
 	    '^g': Immutable.OrderedMap<number, CategoryGroup>;
+	    /** _transactions: Stores transactions. See transactions() getter. */
 	    '^n': Immutable.OrderedMap<number, Transaction>;
 	}>;
 	/**
@@ -505,13 +569,13 @@ declare module 'prophecy-engine/budget' {
 	    /** Assertions to help enforce correct usage. */
 	    protected _checkInvariants(): void;
 	    /** Get the currency of this budget. */
-	    readonly currency: Currency;
+	    get currency(): Currency;
 	    /** Ordered list of Accounts, in custom order */
-	    readonly accounts: AccountMap;
+	    get accounts(): AccountMap;
 	    /** Map of categories, keyed by ID. Not in order. */
-	    readonly categories: CategoryMap;
+	    get categories(): CategoryMap;
 	    /** Ordered list of CategoryGroups, in custom order */
-	    readonly categoryGroups: Immutable.OrderedMap<number, CategoryGroup>;
+	    get categoryGroups(): Immutable.OrderedMap<number, CategoryGroup>;
 	    /**
 	     * Delete a category.
 	     *
@@ -597,7 +661,7 @@ declare module 'prophecy-engine/budget' {
 	     * Ordered list of Transactions, always in chronological order (oldest first; null dates go last)
 	     * @returns {OrderedMap}
 	     */
-	    readonly transactions: TransactionMap;
+	    get transactions(): TransactionMap;
 	    /**
 	     * Delete a transaction
 	     * @param {number} id - ID of the transaction to delete
@@ -618,9 +682,9 @@ declare module 'prophecy-engine/budget' {
 	     * _computeBalances: Private method that computes the balance of each account as well
 	     * as the running total of the relevant account as of each transaction.
 	     */
-	    private _computeBalances();
+	    private _computeBalances;
 	    /** Get an object which contains balance of each account keyed by accountId, considering all non-pending transactions */
-	    readonly accountBalances: {
+	    get accountBalances(): {
 	        readonly [key: number]: number;
 	    };
 	    /**
@@ -665,6 +729,7 @@ declare module 'prophecy-engine/budget' {
 	    static fromJS(obj: BudgetJSON | any): Budget;
 	    static transactionSorter(transaction: Transaction): number;
 	}
+	export {};
 
 }
 declare module 'prophecy-engine/util' {
@@ -697,7 +762,7 @@ declare module 'prophecy-engine/util' {
 	export function assertPositiveIntegerOrNull(v: number | null): void;
 	export const enum ValidationType {
 	    Error = "error",
-	    Warning = "warning",
+	    Warning = "warning"
 	}
 	export interface ValidationMessage {
 	    type: ValidationType;
@@ -712,14 +777,14 @@ declare module 'prophecy-engine/util' {
 	    private __validationMessages;
 	    static Warning: ValidationType;
 	    static Error: ValidationType;
-	    readonly warnings: ValidationMessage[];
-	    readonly errors: ValidationMessage[];
+	    get warnings(): ValidationMessage[];
+	    get errors(): ValidationMessage[];
 	    getFieldIssues(fieldName: string | null): ValidationMessage[];
 	    /**
 	     * Get an array of all validation issues that are not specific to any one field.
 	     */
-	    readonly overallIssues: ValidationMessage[];
-	    readonly allIssues: ReadonlyArray<ValidationMessage>;
+	    get overallIssues(): ValidationMessage[];
+	    get allIssues(): ReadonlyArray<ValidationMessage>;
 	    /** Internal method for use by ValidationContext only. */
 	    _pushMessage(type: ValidationType, message: string, field: string | null): void;
 	}
@@ -748,7 +813,7 @@ declare module 'prophecy-engine/util' {
 	     * @param {*} message - A string describing the validation issue.
 	     */
 	    addError(field: string | null, message: string): void;
-	    readonly result: Readonly<ValidationResult>;
+	    get result(): Readonly<ValidationResult>;
 	}
 	export { PRecord } from 'prophecy-engine/precord';
 	/**
@@ -844,6 +909,7 @@ declare module 'prophecy-engine/account' {
 	    id: number | null;
 	    name: string;
 	    initialBalance: number;
+	    /** the ISO 4217 currency code */
 	    currencyCode: string;
 	    metadata: Immutable.Map<string, any>;
 	}>;
@@ -855,7 +921,7 @@ declare module 'prophecy-engine/account' {
 	    /** Assertions to help enforce correct usage. */
 	    protected _checkInvariants(): void;
 	    /** Get the currency of this account. */
-	    readonly currency: Currency;
+	    get currency(): Currency;
 	    /**
 	     * Given a JS object which may be JSON-serializable, convert it to the proper
 	     * fully-typed, immutable representation required to initialize or modify
@@ -869,6 +935,7 @@ declare module 'prophecy-engine/account' {
 	     */
 	    static cleanArgs(values: AccountValues): AccountValues;
 	}
+	export {};
 
 }
 declare module 'prophecy-engine/redux/actions' {

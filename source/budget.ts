@@ -33,16 +33,16 @@ const enum PrivateFields {
 // The major version should be changed when backwards compatibility is broken.
 // The minor version should be changed when new features are added in a backwards-compatible way.
 export const majorVersion = 0;
-export const minorVersion = 2;
+export const minorVersion = 3;
 
 export type AccountMap = Immutable.OrderedMap<number, Account>;
-export const AccountMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Account>(...args);
+export const AccountMap = (arg?: any) => Immutable.OrderedMap<number, Account>(arg);
 export type CategoryMap = Immutable.OrderedMap<number, Category>;
-export const CategoryMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Category>(...args);
+export const CategoryMap = (arg?: any) => Immutable.OrderedMap<number, Category>(arg);
 export type CategoryGroupMap = Immutable.OrderedMap<number, CategoryGroup>;
-export const CategoryGroupMap = <T>(...args: T[]) => Immutable.OrderedMap<number, CategoryGroup>(...args);
+export const CategoryGroupMap = (arg?: any) => Immutable.OrderedMap<number, CategoryGroup>(arg);
 export type TransactionMap = Immutable.OrderedMap<number, Transaction>;
-export const TransactionMap = <T>(...args: T[]) => Immutable.OrderedMap<number, Transaction>(...args);
+export const TransactionMap = (arg?: any) => Immutable.OrderedMap<number, Transaction>(arg);
 
 export interface BudgetJSON {
     id: number|null;
@@ -215,7 +215,7 @@ export class Budget extends PRecord({
             (t: Transaction) => t.set('detail', t.detail.map(
                 (d: TransactionDetail) => d.update('categoryId', categoryId => categoryId === id ? null : categoryId)
             ).toList())
-        );
+        ) as TransactionMap;
         return this.merge({
             [_categories]: this[_categories].delete(id),
             [_transactions]: transactions,
@@ -344,7 +344,7 @@ export class Budget extends PRecord({
                 return t.set("accountId", null);
             }
             return t;
-        });
+        }) as TransactionMap;
         return this.merge({
             [_accounts]: this[_accounts].delete(id),
             [_transactions]: transactions,

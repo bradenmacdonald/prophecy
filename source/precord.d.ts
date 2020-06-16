@@ -18,7 +18,7 @@ interface TypedRecordInstance<T extends Object> {
 
     // Reading values
 
-    has(key: string): key is keyof T;
+    has(key: string|number|symbol): key is keyof T;
     get<K extends keyof T>(key: K): T[K];
 
     // Reading deep values

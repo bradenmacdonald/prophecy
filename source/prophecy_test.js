@@ -6,7 +6,7 @@ describe('Prophecy Engine', function() {
 
     it('has the expected version numbers', () => {
         Prophecy.version.major.should.equal(0);
-        Prophecy.version.minor.should.equal(2);
+        Prophecy.version.minor.should.equal(3);
     });
 
 });
