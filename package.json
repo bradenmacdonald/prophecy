@@ -10,7 +10,6 @@
   "dependencies": {
     "immutable": "3.8.1"
   },
-  "module": "dist/prophecy.js",
   "types": "prophecy-dist.d.ts",
   "devDependencies": {
     "chai": "3.4.1",
